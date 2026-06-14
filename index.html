@@ -408,6 +408,27 @@
     transform: translate(2px, -2px);
   }
 
+  /* Project Badge Styling */
+  .project-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(122, 155, 95, 0.12);
+    color: var(--green-2);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-icon {
+    width: 12px;
+    height: 12px;
+  }
+
   .project-desc {
     color: var(--grey-1);
     font-size: 14px;
@@ -689,83 +710,94 @@
     <div class="container">
       <div class="section-header fade-in delay-4">
         <h2 id="projects-heading">Featured projects</h2>
-        <span class="count">— 5 highlights</span>
+        <span class="count">— 4 highlights</span>
       </div>
       <div class="projects-grid">
+        
+        <article class="project-card fade-in delay-4">
+          <a href="#" class="project-link" aria-label="View project details"></a>
+          <div class="project-head">
+            <h3 class="project-title">WEBots Humanoid Robotics</h3>
+            <span class="project-arrow" aria-hidden="true">↗</span>
+          </div>
+          <p class="project-desc">
+            De facto communications and electrical lead on a 5+ person humanoid platform. 
+            Architected deterministic CAN Bus 2.0B backbone for distributed ESP32 sensor/motor control 
+            and configured ROS2 Jazzy on WSL2 with kernel recompilation. Led technical design reviews 
+            and electrical integration with custom PCBs.
+          </p>
+          <div class="project-tags">
+            <span class="project-tag">ROS2 Jazzy</span>
+            <span class="project-tag">CAN Bus 2.0B</span>
+            <span class="project-tag">Leadership</span>
+            <span class="project-tag">Custom PCB</span>
+          </div>
+        </article>
+ 
         <article class="project-card fade-in delay-4">
           <a href="https://github.com/NEhnes/fpga-effects-pedal" target="_blank" class="project-link" aria-label="View project details"></a>
           <div class="project-head">
-            <h3 class="project-title">FPGA Guitar Effects Pedal</h3>
+            <h3 class="project-title">Zynq FPGA Guitar Effects Pedal</h3>
             <span class="project-arrow" aria-hidden="true">↗</span>
           </div>
-          <p class="project-desc">Zynq-7000 SoC-based digital guitar pedal with real-time modular DSP effects on FPGA fabric and Linux-based control via AXI Stream interconnect.</p>
+          <p class="project-desc">
+            Zynq-7000 SoC-based digital guitar pedal with real-time modular DSP on FPGA fabric 
+            and Linux-based control. Demonstrates hardware-software co-design: FPGA guarantees 
+            sample-accurate 48 kHz audio processing independent of OS jitter; AXI Stream interconnect 
+            enables runtime effect-chain reconfiguration. Sub-5 ms latency end-to-end.
+          </p>
           <div class="project-tags">
             <span class="project-tag">Zynq SoC</span>
             <span class="project-tag">C++</span>
-            <span class="project-tag">FPGA</span>
-            <span class="project-tag">DSP</span>
+            <span class="project-tag">Real-time DSP</span>
+            <span class="project-tag">Vivado HLS</span>
           </div>
         </article>
-
-        <article class="project-card fade-in delay-4">
-          <a href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" class="project-link" aria-label="View project details"></a>
-          <div class="project-head">
-            <h3 class="project-title">ESP32 WiFi RC Video Rover</h3>
-            <span class="project-arrow" aria-hidden="true">↗</span>
-          </div>
-          <p class="project-desc">Autonomous rover with live SVGA video streaming and real-time asynchronous motor control communicating over a bandwidth-constrained Wi-Fi connection.</p>
-          <div class="project-tags">
-            <span class="project-tag">ESP32</span>
-            <span class="project-tag">C++</span>
-            <span class="project-tag">WebSocket</span>
-            <span class="project-tag">Hardware</span>
-          </div>
-        </article>
-
+ 
         <article class="project-card fade-in delay-5">
           <a href="#" class="project-link" aria-label="View project details"></a>
           <div class="project-head">
             <h3 class="project-title">Wildlife Soundscape Logger</h3>
             <span class="project-arrow" aria-hidden="true">↗</span>
           </div>
-          <p class="project-desc">Low-cost outdoor acoustic logger capturing biodiversity data in WAV format. Engineered custom I2S audio pipelines and power scheduling for month-long field deployments.</p>
+          <div class="project-badge">
+            <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            1st Place Competition
+          </div>
+          <p class="project-desc">
+            Low-cost outdoor acoustic logger for biodiversity research. Captures month-long field deployments 
+            on ~$77.50 unit cost (50% cheaper than commercial alternatives). Custom firmware: I2S audio 
+            pipeline, duty-cycle scheduler (5 min record / 55 min sleep), and MicroSD WAV writer. 
+            Spherical 3D-printed enclosure with equatorial mesh for omnidirectional capture.
+          </p>
           <div class="project-tags">
             <span class="project-tag">ESP32</span>
             <span class="project-tag">C++</span>
-            <span class="project-tag">Hardware</span>
-            <span class="project-tag">I2S</span>
+            <span class="project-tag">I2S / WAV</span>
+            <span class="project-tag">Deployment</span>
           </div>
         </article>
-
+ 
         <article class="project-card fade-in delay-5">
-          <a href="https://github.com/NEhnes/Samurai-Skirmish-Fighter-Game" target="_blank" class="project-link" aria-label="View project details"></a>
+          <a href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" class="project-link" aria-label="View project details"></a>
           <div class="project-head">
-            <h3 class="project-title">Samurai Skirmish 2D Fighter</h3>
+            <h3 class="project-title">ESP32 WiFi RC Video Rover</h3>
             <span class="project-arrow" aria-hidden="true">↗</span>
           </div>
-          <p class="project-desc">Desktop fighting game built in C# demonstrating polymorphic software architecture, robust state machine management, and frame-accurate collision mechanics.</p>
+          <p class="project-desc">
+            WiFi-controlled autonomous rover with live SVGA video streaming and real-time asynchronous motor control 
+            under severe bandwidth constraints. Decoupled async architecture achieves &lt;50 ms control latency 
+            independent of video framerate. Dynamic frame-skipping and thermal throttling adapt to 1–10 Mbps WiFi 
+            variability while maintaining ~1 hour runtime on 3S LiPo.
+          </p>
           <div class="project-tags">
-            <span class="project-tag">C#</span>
-            <span class="project-tag">.NET</span>
-            <span class="project-tag">OOP</span>
-            <span class="project-tag">Game Loop</span>
-          </div>
-        </article>
-
-        <article class="project-card fade-in delay-5">
-          <a href="#" class="project-link" aria-label="View project details"></a>
-          <div class="project-head">
-            <h3 class="project-title">WEBots Humanoid Robotics</h3>
-            <span class="project-arrow" aria-hidden="true">↗</span>
-          </div>
-          <p class="project-desc">Communications lead for a humanoid platform. Architected a deterministic CAN Bus 2.0B backbone for distributed sensor/motor control and configured ROS2 Jazzy.</p>
-          <div class="project-tags">
-            <span class="project-tag">ROS2</span>
-            <span class="project-tag">CAN Bus</span>
+            <span class="project-tag">ESP32</span>
             <span class="project-tag">C++</span>
-            <span class="project-tag">Leadership</span>
+            <span class="project-tag">WebSocket</span>
+            <span class="project-tag">Real-time</span>
           </div>
         </article>
+
       </div>
     </div>
   </section>
