@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nathan Ehnes — Hardware, Embedded, AI Systems</title>
+<meta name="description" content="Engineering co-op focused on hardware design, AI systems, embedded systems, robotics, and aerospace." />
+<style>
+  :root {
+    --green-1: #7a9b5f;
+    --green-2: #6b8b52;
+    --green-soft: #a8bd8a;
+    --grey-1: #6b6b6b;
+    --grey-2: #8b8b8b;
+    --beige-1: #e8e5d9;
+    --beige-2: #f5f3ed;
+    --beige-3: #faf8f2;
+    --ink: #2d2f28;
+    --ink-soft: #3d4036;
+    --shadow-sm: 0 1px 3px rgba(45, 47, 40, 0.06), 0 1px 2px rgba(45, 47, 40, 0.04);
+    --shadow-md: 0 4px 12px rgba(45, 47, 40, 0.08), 0 2px 4px rgba(45, 47, 40, 0.05);
+    --shadow-lg: 0 12px 28px rgba(45, 47, 40, 0.12), 0 4px 8px rgba(45, 47, 40, 0.06);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--beige-2);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Fade-in animation on load */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.25s; }
+  .delay-3 { animation-delay: 0.4s; }
+  .delay-4 { animation-delay: 0.55s; }
+  .delay-5 { animation-delay: 0.7s; }
+  .delay-6 { animation-delay: 0.85s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .breathing-bg {
+      animation: none !important;
+    }
+  }
+
+  /* Header / Nav */
+  header {
+    padding: 28px 0 12px;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--green-1), var(--green-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--beige-2);
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    color: var(--grey-1);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color var(--transition);
+  }
+
+  .nav-links a:hover {
+    color: var(--green-2);
+  }
+
+  /* Hero */
+  .hero {
+    padding: 100px 0 80px;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+  }
+
+  .breathing-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 30% 30%, rgba(122,155,95,0.07), transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(107,139,82,0.07), transparent 60%);
+    animation: breathe 8s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 1; }
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-name {
+    font-size: clamp(3rem, 7vw, 5.5rem); /* Scaled down */
+    line-height: 0.5;
+    font-weight: 550;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin-bottom: 24px;
+    margin-left: -3px; 
+  }
+
+  .hero-punchline {
+    font-size: clamp(1.25rem, 3vw, 1.875rem);
+    font-weight: 350;
+    color: var(--green-2); /* Updated to green */
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+
+  .hero-school {
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: var(--grey-1);
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .meta-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--green-2);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--green-2);
+    color: var(--beige-2);
+  }
+
+  .btn-primary:hover {
+    background: var(--green-1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-secondary {
+    background: var(--beige-3);
+    color: var(--ink);
+    border-color: rgba(107, 107, 107, 0.2);
+  }
+
+  .btn-secondary:hover {
+    background: #ffffff;
+    border-color: var(--green-1);
+    color: var(--green-2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Sections */
+  section {
+    padding: 48px 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  .section-header .count {
+    color: var(--grey-2);
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Skills */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .skill {
+    background: var(--beige-1);
+    color: var(--ink-soft);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid rgba(107, 107, 107, 0.1);
+    transition: all var(--transition);
+    cursor: default;
+  }
+
+  .skill:hover {
+    background: var(--green-1);
+    color: var(--beige-2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--green-1);
+  }
+
+  .skill.featured {
+    background: var(--green-2);
+    color: var(--beige-2);
+    border-color: var(--green-2);
+  }
+
+  .skill.featured::before {
+    content: "★ ";
+    color: var(--beige-2);
+  }
+
+  /* Rotating skill tag */
+  .rotating-tag-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    color: var(--grey-1);
+    font-size: 14px;
+  }
+
+  .rotating-tag {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--beige-2);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    min-width: 100px;
+    text-align: center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Projects */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 720px) {
+    .projects-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .project-card {
+    background: var(--beige-3);
+    border: 1px solid rgba(107, 107, 107, 0.08);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    transition: all var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .project-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--green-1);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--transition);
+  }
+
+  .project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    background: #ffffff;
+  }
+
+  .project-card:hover::after {
+    transform: scaleY(1);
+  }
+
+  .project-card:focus-within {
+    outline: 2px solid var(--green-1);
+    outline-offset: 2px;
+  }
+
+  .project-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .project-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .project-arrow {
+    color: var(--grey-2);
+    font-size: 18px;
+    transition: all var(--transition);
+    flex-shrink: 0;
+  }
+
+  .project-card:hover .project-arrow {
+    color: var(--green-2);
+    transform: translate(2px, -2px);
+  }
+
+  /* Project Badge Styling */
+  .project-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(122, 155, 95, 0.12);
+    color: var(--green-2);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .project-desc {
+    color: var(--grey-1);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .project-tag {
+    font-size: 11px;
+    color: var(--grey-1);
+    background: var(--beige-1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .project-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .project-card > *:not(.project-link) {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Currently */
+  .currently-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (min-width: 600px) {
+    .currently-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .currently-card {
+    background: var(--beige-1);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all var(--transition);
+  }
+
+  .currently-card:hover {
+    background: var(--beige-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .currently-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(122, 155, 95, 0.15);
+    color: var(--green-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .currently-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--grey-2);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .currently-text {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* Leadership */
+  .leadership-block {
+    background: var(--beige-3);
+    border-left: 3px solid var(--green-1);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 24px 28px;
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .leadership-block strong {
+    color: var(--ink);
+  }
+
+  /* CTA */
+  .cta-section {
+    text-align: center;
+    padding: 64px 0 80px;
+  }
+
+  .cta-title {
+    font-size: clamp(1.5rem, 3vw, 1.875rem);
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .cta-sub {
+    color: var(--grey-1);
+    margin-bottom: 32px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid rgba(107, 107, 107, 0.1);
+    padding: 28px 0;
+    text-align: center;
+    color: var(--grey-2);
+    font-size: 13px;
+  }
+
+  footer a {
+    color: var(--grey-1);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+
+  footer a:hover {
+    color: var(--green-2);
+  }
+
+  /* Focus visible */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--green-1);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container fade-in delay-1">
+    <nav aria-label="Primary navigation">
+      <a href="#" class="logo" aria-label="Home">
+        <span class="logo-mark" aria-hidden="true">NE</span>
+        <span>NATHAN EHNES</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#currently">Now</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="breathing-bg"></div>
+    <div class="container hero-inner">
+      <h1 class="hero-name fade-in delay-2">NATHAN EHNES</h1>
+      <p class="hero-punchline fade-in delay-3">Building intelligent systems from silicon to software.</p>
+      <p class="hero-school fade-in delay-3">
+        BESc. in Electrical Engineering + AI Systems Engineering dual degree<br>
+        University of Western Ontario &nbsp;·&nbsp; Dean's Honour List
+      </p>
+      <div class="hero-meta fade-in delay-4">
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Embedded Systems · FPGA Design · AI Systems · Robotics
+        </span>
+      </div>
+      <div class="hero-actions fade-in delay-5">
+        <a class="btn btn-secondary" href="https://github.com/NEhnes" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          GitHub
+        </a>
+        <a class="btn btn-secondary" href="https://linkedin.com" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a class="btn btn-primary" href="#">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Resume
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills" aria-labelledby="skills-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-3">
+        <h2 id="skills-heading">Technical skills</h2>
+        <span class="count">— what I work with</span>
+      </div>
+      <div class="rotating-tag-wrapper fade-in delay-3" aria-live="polite">
+        <span>Currently exploring:</span>
+        <span class="rotating-tag" id="rotatingTag">RTOS</span>
+      </div>
+      <div class="skills-grid fade-in delay-4">
+        <span class="skill featured">C / C++</span>
+        <span class="skill featured">Python</span>
+        <span class="skill featured">Embedded Systems</span>
+        <span class="skill">ESP32 / STM32</span>
+        <span class="skill">ROS2</span>
+        <span class="skill">PCB Design (KiCad)</span>
+        <span class="skill">Soldering & Assembly</span>
+        <span class="skill">3D Printing</span>
+        <span class="skill">CAD (Fusion 360)</span>
+        <span class="skill">AI Systems / TinyML</span>
+        <span class="skill">Sensor Integration</span>
+        <span class="skill">Git / Linux CLI</span>
+        <span class="skill">MATLAB</span>
+        <span class="skill">UART / I2C / SPI</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" aria-labelledby="projects-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="projects-heading">Featured projects</h2>
+        <span class="count">— 4 highlights</span>
+      </div>
+      <div class="projects-grid">
+        
+        <article class="project-card fade-in delay-4">
+          <a href="https://github.com/NEhnes/fpga-effects-pedal" target="_blank" class="project-link" aria-label="View project details"></a>
+          <div class="project-head">
+            <h3 class="project-title">Zynq FPGA Guitar Effects Pedal</h3>
+            <span class="project-arrow" aria-hidden="true">↗</span>
+          </div>
+          <p class="project-desc">
+            Zynq-7000 SoC-based digital guitar pedal with real-time modular DSP on FPGA fabric 
+            and Linux-based control. Demonstrates hardware-software co-design: FPGA guarantees 
+            sample-accurate 48 kHz audio processing independent of OS jitter; AXI Stream interconnect 
+            enables runtime effect-chain reconfiguration. Sub-5 ms latency end-to-end.
+          </p>
+          <div class="project-tags">
+            <span class="project-tag">Zynq SoC</span>
+            <span class="project-tag">C++</span>
+            <span class="project-tag">Real-time DSP</span>
+            <span class="project-tag">Vivado HLS</span>
+          </div>
+        </article>
+ 
+        <article class="project-card fade-in delay-4">
+          <a href="#" class="project-link" aria-label="View project details"></a>
+          <div class="project-head">
+            <h3 class="project-title">WEBots Humanoid Robotics</h3>
+            <span class="project-arrow" aria-hidden="true">↗</span>
+          </div>
+          <p class="project-desc">
+            De facto communications and electrical lead on a 5+ person humanoid platform. 
+            Architected deterministic CAN Bus 2.0B backbone for distributed ESP32 sensor/motor control 
+            and configured ROS2 Jazzy on WSL2 with kernel recompilation. Led technical design reviews 
+            and electrical integration with custom PCBs.
+          </p>
+          <div class="project-tags">
+            <span class="project-tag">ROS2 Jazzy</span>
+            <span class="project-tag">CAN Bus 2.0B</span>
+            <span class="project-tag">Leadership</span>
+            <span class="project-tag">Custom PCB</span>
+          </div>
+        </article>
+
+        <article class="project-card fade-in delay-5">
+          <a href="#" class="project-link" aria-label="View project details"></a>
+          <div class="project-head">
+            <h3 class="project-title">Wildlife Soundscape Logger</h3>
+            <span class="project-arrow" aria-hidden="true">↗</span>
+          </div>
+          <div class="project-badge">
+            <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            1st Place Competition
+          </div>
+          <p class="project-desc">
+            Low-cost outdoor acoustic logger for biodiversity research. Captures month-long field deployments 
+            on ~$77.50 unit cost (50% cheaper than commercial alternatives). Custom firmware: I2S audio 
+            pipeline, duty-cycle scheduler (5 min record / 55 min sleep), and MicroSD WAV writer. 
+            Spherical 3D-printed enclosure with equatorial mesh for omnidirectional capture.
+          </p>
+          <div class="project-tags">
+            <span class="project-tag">ESP32</span>
+            <span class="project-tag">C++</span>
+            <span class="project-tag">I2S / WAV</span>
+            <span class="project-tag">Deployment</span>
+          </div>
+        </article>
+ 
+        <article class="project-card fade-in delay-5">
+          <a href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" class="project-link" aria-label="View project details"></a>
+          <div class="project-head">
+            <h3 class="project-title">ESP32 WiFi RC Video Rover</h3>
+            <span class="project-arrow" aria-hidden="true">↗</span>
+          </div>
+          <p class="project-desc">
+            WiFi-controlled autonomous rover with live SVGA video streaming and real-time asynchronous motor control 
+            under severe bandwidth constraints. Decoupled async architecture achieves &lt;50 ms control latency 
+            independent of video framerate. Dynamic frame-skipping and thermal throttling adapt to 1–10 Mbps WiFi 
+            variability while maintaining ~1 hour runtime on 3S LiPo.
+          </p>
+          <div class="project-tags">
+            <span class="project-tag">ESP32</span>
+            <span class="project-tag">C++</span>
+            <span class="project-tag">WebSocket</span>
+            <span class="project-tag">Real-time</span>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="currently" aria-labelledby="currently-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-5">
+        <h2 id="currently-heading">Currently</h2>
+        <span class="count">— what I'm up to</span>
+      </div>
+      <div class="currently-grid fade-in delay-5">
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">⌬</div>
+          <div>
+            <div class="currently-label">Role</div>
+            <div class="currently-text">Engineering co-op — hardware & embedded systems</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">⚙</div>
+          <div>
+            <div class="currently-label">Building</div>
+            <div class="currently-text">A humanoid robotics platform with custom PCBs and ROS2</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">◐</div>
+          <div>
+            <div class="currently-label">Learning</div>
+            <div class="currently-text">RTOS internals, motor control theory, and PCB RF basics</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">→</div>
+          <div>
+            <div class="currently-label">Looking for</div>
+            <div class="currently-text">Hardware / embedded / R&D co-op or new-grad roles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="leadership-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-6">
+        <h2 id="leadership-heading">Leadership</h2>
+        <span class="count">— beyond the bench</span>
+      </div>
+      <div class="leadership-block fade-in delay-6">
+        <strong>Team lead and mentor</strong> across robotics projects — from VEX competition teams to a multi-discipline university robotics group. I focus on clear documentation, paired debugging, and giving newer members room to fail productively. I learn best by teaching, and engineering teams work best when everyone owns a piece of the system.
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="cta-section" aria-labelledby="contact-heading">
+    <div class="container">
+      <h2 id="contact-heading" class="cta-title fade-in delay-6">Let's build something real.</h2>
+      <p class="cta-sub fade-in delay-6">Open to hardware, embedded, and R&D conversations. Best reached by email — happy to share a portfolio or schedule a call.</p>
+      <div class="cta-buttons fade-in delay-6">
+        <a href="mailto:contact@example.com" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Get in touch
+        </a>
+        <a href="https://github.com/NEhnes" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          Explore GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Built with HTML, CSS, caffeine, and occasional FPGA synthesis failures.</p>
+  </div>
+</footer>
+
+<script>
+  // Rotating skill tag — subtle, understated
+  (function () {
+    const tags = [
+      "RTOS internals",
+      "motor control",
+      "PCB layout",
+      "TinyML",
+      "sensor fusion",
+      "ROS2 nav"
+    ];
+    const el = document.getElementById("rotatingTag");
+    if (!el) return;
+    let i = 0;
+    setInterval(() => {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(-4px)";
+      setTimeout(() => {
+        i = (i + 1) % tags.length;
+        el.textContent = tags[i];
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      }, 300);
+    }, 2400);
+  })();
+
+  // Project card link click behavior
+  document.querySelectorAll(".project-card .project-link").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      if (link.getAttribute("href") === "#") {
+        e.preventDefault();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
