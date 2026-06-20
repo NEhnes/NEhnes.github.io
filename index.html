@@ -22,8 +22,8 @@
     --p-ink-soft:     #c8c8c8;
     --p-border:       rgba(240,240,240,0.07);
     --p-border-pill:  rgba(240,240,240,0.09);
-    --p-tag-bg:       #383838;
-    --p-tag-color:    #c8c8c8;
+    --p-tag-bg:       rgba(0, 201, 217, 0.12);
+    --p-tag-color:    #00d9eb;
     --p-badge-bg:     rgba(107,139,82,0.22);
     --p-badge-color:  #a8bd8a;
     --p-icon-bg:      rgba(0,201,217,0.13);
@@ -191,7 +191,21 @@
   }
   @media (min-width: 768px) {
     .projects-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .project-card:first-child {
+    grid-column: 1 / -1;
+  }
+  .project-card:first-child {
+    min-height: 320px;
+  }
+  @media (max-width: 767px) {
+    .project-card:nth-child(2),
+    .project-card:nth-child(3),
+    .project-card:nth-child(4) {
+      grid-column: 1 / -1;
     }
   }
 
@@ -265,7 +279,7 @@
 
   .project-badge {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--p-badge-bg); color: var(--p-badge-color);
+    background: rgba(0, 201, 217, 0.12); color: #00d9eb;
     font-size: 11px; font-weight: 600; padding: 4px 10px;
     border-radius: 6px; text-transform: uppercase; letter-spacing: 0.03em;
     position: relative; z-index: 2; margin-bottom: 8px;
@@ -275,7 +289,7 @@
 
   .project-desc { color: var(--grey-1); font-size: 14px; line-height: 1.55; margin-bottom: 20px; }
   .project-tags { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; }
-  .project-tag { font-size: 11px; color: var(--grey-1); background: var(--p-tag-bg); padding: 4px 10px; border-radius: 6px; font-weight: 500; letter-spacing: 0.02em; }
+  .project-tag { font-size: 11px; color: var(--grey-1); background: var(--p-surface); padding: 4px 10px; border-radius: 6px; font-weight: 500; letter-spacing: 0.02em; }
   .project-link { position: absolute; inset: 0; z-index: 5; }
   .project-card > *:not(.project-link) { position: relative; z-index: 2; }
 
