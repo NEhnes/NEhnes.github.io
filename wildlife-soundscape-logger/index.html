@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wildlife Soundscape Logger — Nathan Ehnes</title>
+  <meta name="description" content="ESP32-based outdoor audio logger for behavioral ecology research, built with I2S audio capture, SPI microSD storage, WAV encoding, and power-aware duty cycling." />
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       MODERN DOLCH DARK THEME — GOLD VARIANT
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+      --p-primary:      #d98f00;
+      --p-primary-alt:  #c28000;
+      --p-primary-soft: #6b4600;
+      --p-secondary:    #8a8a8a;
+      --p-secondary-lt: #6a6a6a;
+      --p-bg:           #2a2a2a;
+      --p-bg-alt:       #333333;
+      --p-surface:      #383838;
+      --p-ink:          #f0f0f0;
+      --p-ink-soft:     #c8c8c8;
+      --p-border:       rgba(240,240,240,0.07);
+      --p-border-pill:  rgba(240,240,240,0.09);
+      --p-tag-bg:       rgba(217, 143, 0, 0.12);
+      --p-tag-color:    #eb9b00;
+      --p-badge-bg:     rgba(217, 143, 0, 0.15);
+      --p-badge-color:  #ffb700;
+      --p-icon-bg:      rgba(217, 143, 0, 0.13);
+      --p-icon-color:   #d98f00;
+      --p-card-bg:      #333333;
+      --p-btn-primary-bg:   #d98f00;
+      --p-btn-primary-fg:   #1a1a1a;
+      --p-btn-secondary-bg: #383838;
+      --p-btn-secondary-fg: #f0f0f0;
+      --p-btn-secondary-border: rgba(240,240,240,0.18);
+      --p-punchline:    #d98f00;
+      --p-left-bar:     #ff5068;
+      --p-rotating-bg:  #f0f0f0;
+      --p-rotating-fg:  #2a2a2a;
+      --p-nav-hover:    #d98f00;
+      --p-footer-border: rgba(240,240,240,0.07);
+      --p-gold:         #eec945;
+
+      --green-1:    var(--p-primary-alt);
+      --green-2:    var(--p-primary);
+      --green-soft: var(--p-primary-soft);
+      --grey-1:     var(--p-secondary);
+      --grey-2:     var(--p-secondary-lt);
+      --beige-1:    var(--p-surface);
+      --beige-2:    var(--p-bg);
+      --beige-3:    var(--p-bg-alt);
+      --ink:        var(--p-ink);
+      --ink-soft:   var(--p-ink-soft);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    body, .skill, .project-card, .currently-card,
+    .leadership-block, .btn, header, footer, .rotating-tag,
+    .currently-icon, .project-badge, .project-tag, nav, .logo,
+    .logo-mark, .hero-punchline, h1, h2, h3 {
+      transition-property: background-color, color, border-color, box-shadow;
+      transition-duration: 0.4s;
+      transition-timing-function: ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--beige-2);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease-out forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    .delay-5 { animation-delay: 0.7s; }
+    .delay-6 { animation-delay: 0.85s; }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { opacity: 1; transform: none; animation: none; }
+    }
+
+    header { padding: 28px 0 12px; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 600; color: var(--ink); text-decoration: none;
+      font-size: 15px; letter-spacing: -0.01em;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--green-1), var(--green-2));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--p-btn-primary-fg); font-weight: 700; font-size: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-links { display: flex; gap: 24px; list-style: none; flex-wrap: wrap; }
+    .nav-links a { color: var(--grey-1); text-decoration: none; font-size: 14px; font-weight: 500; transition: color var(--transition); }
+    .nav-links a:hover { color: var(--p-nav-hover); }
+
+    .hero { padding: 92px 0 72px; background: var(--p-bg); }
+    .hero-inner { position: relative; z-index: 1; }
+
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 18px; padding: 6px 12px; border-radius: 999px;
+      background: var(--p-badge-bg); color: var(--p-badge-color);
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .hero-title {
+      font-size: clamp(2.6rem, 7vw, 5.25rem);
+      line-height: 0.92;
+      font-weight: 650;
+      letter-spacing: -0.055em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+
+    .hero-punchline {
+      font-size: clamp(1.2rem, 3vw, 1.875rem);
+      font-weight: 350;
+      color: var(--p-punchline);
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      max-width: 780px;
+    }
+
+    .hero-school {
+      font-size: clamp(1rem, 2vw, 1.125rem);
+      color: var(--grey-1);
+      margin-bottom: 30px;
+      line-height: 1.65;
+      max-width: 760px;
+    }
+
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 34px; }
+    .meta-item { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+    .meta-icon { width: 16px; height: 16px; color: var(--green-2); flex-shrink: 0; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      cursor: pointer; border: 1px solid transparent; transition: all var(--transition);
+    }
+    .btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-secondary { background: var(--p-btn-secondary-bg); color: var(--p-btn-secondary-fg); border-color: var(--p-btn-secondary-border); }
+    .btn-secondary:hover { background: var(--p-bg-alt); border-color: var(--p-primary); color: var(--p-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+    .hero-visual {
+      margin-top: 56px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--p-border);
+      background:
+        radial-gradient(circle at 18% 22%, rgba(217,143,0,0.28), transparent 26%),
+        radial-gradient(circle at 78% 18%, rgba(238,201,69,0.18), transparent 22%),
+        linear-gradient(135deg, rgba(240,240,240,0.08), rgba(240,240,240,0.02));
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-visual-card {
+      min-height: 360px;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 24px;
+      align-items: center;
+      position: relative;
+    }
+
+    .hero-visual-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(240,240,240,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240,240,240,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .device-wireframe {
+      position: relative;
+      z-index: 1;
+      border-radius: 24px;
+      min-height: 270px;
+      background: linear-gradient(145deg, rgba(56,56,56,0.92), rgba(26,26,26,0.92));
+      border: 1px solid rgba(240,240,240,0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), var(--shadow-md);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .device-wireframe::before {
+      content: "";
+      position: absolute;
+      inset: 22px;
+      border: 1px dashed rgba(217,143,0,0.42);
+      border-radius: 18px;
+    }
+
+    .device-wireframe::after {
+      content: "Field logger enclosure";
+      position: absolute;
+      left: 44px;
+      bottom: 44px;
+      color: var(--p-badge-color);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .visual-specs {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+    }
+
+    .spec-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(240,240,240,0.045);
+      border: 1px solid var(--p-border);
+    }
+
+    .spec-pill strong {
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .spec-pill span {
+      color: var(--p-badge-color);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    section { padding: 54px 0; }
+    .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+    h2 { font-size: 1.35rem; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; }
+    .section-header .count { color: var(--grey-2); font-size: 0.9rem; }
+
+    .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .skill {
+      background: var(--p-tag-bg); color: var(--p-tag-color);
+      padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
+      border: 1px solid var(--p-border-pill); cursor: default; transition: all var(--transition);
+    }
+    .skill:hover { background: var(--p-primary); color: var(--p-btn-primary-fg); transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--p-primary); }
+    .skill.featured { background: var(--p-primary); color: var(--p-btn-primary-fg); border-color: var(--p-primary); }
+    .skill.featured::before { content: "★ "; }
+
+    .project-image {
+      margin: 28px 0;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--p-border);
+      background: rgba(240,240,240,0.03);
+      overflow: hidden;
+    }
+
+    .project-image img {
+      display: block;
+      width: 100%;
+      min-height: 260px;
+      object-fit: cover;
+      background:
+        linear-gradient(135deg, rgba(217,143,0,0.18), rgba(240,240,240,0.03)),
+        repeating-linear-gradient(45deg, rgba(240,240,240,0.055) 0 2px, transparent 2px 16px),
+        var(--p-bg-alt);
+      border-radius: var(--radius-lg);
+    }
+
+    .project-image figcaption {
+      text-align: center;
+      color: var(--grey-1);
+      font-size: 13px;
+      margin-top: 8px;
+      padding: 0 14px 14px;
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    @media (min-width: 800px) {
+      .split-grid { grid-template-columns: 0.9fr 1.1fr; }
+      .hero-visual-card { grid-template-columns: 1fr 1fr; }
+    }
+
+    .info-card, .metric-card, .challenge-card, .flow-card {
+      background: var(--p-card-bg);
+      border: 1px solid var(--p-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-card h3, .challenge-card h3, .flow-card h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .info-card p, .challenge-card p, .flow-card p, .metric-card p {
+      color: var(--ink-soft);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 640px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .metric-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(217,143,0,0.14), transparent 34%);
+      pointer-events: none;
+    }
+    .metric-card > * { position: relative; z-index: 1; }
+    .metric-value {
+      color: var(--p-badge-color);
+      font-size: clamp(1.75rem, 5vw, 2.45rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .metric-label {
+      color: var(--ink);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .architecture-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .architecture-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(240,240,240,0.035);
+      border: 1px solid var(--p-border);
+    }
+
+    .architecture-item .number {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--p-icon-bg);
+      color: var(--p-icon-color);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .architecture-item h3 {
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .architecture-item p {
+      color: var(--ink-soft);
+      font-size: 14px;
+    }
+
+    .challenge-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 800px) { .challenge-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .challenge-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .challenge-card .challenge-index {
+      color: var(--p-badge-color);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: -4px;
+    }
+
+    .flow-card {
+      background:
+        linear-gradient(135deg, rgba(217,143,0,0.08), rgba(240,240,240,0.025)),
+        var(--p-card-bg);
+    }
+
+    .flow-steps {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      color: var(--ink-soft);
+    }
+
+    .flow-step::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--p-primary);
+      margin-top: 9px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 5px rgba(217,143,0,0.1);
+    }
+
+    .build-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 800px) { .build-grid { grid-template-columns: 1fr 1fr; } }
+
+    .code-block {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: #202020;
+      border: 1px solid var(--p-border);
+      overflow: auto;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .team-card {
+      background: var(--p-bg-alt);
+      border-left: 3px solid var(--p-left-bar);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 24px 28px;
+      color: var(--ink-soft);
+      line-height: 1.65;
+    }
+    .team-card strong { color: var(--ink); }
+
+    .cta-section { text-align: center; padding: 64px 0 80px; }
+    .cta-title { font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 700; color: var(--ink); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .cta-sub { color: var(--grey-1); margin-bottom: 32px; max-width: 520px; margin-left: auto; margin-right: auto; }
+    .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    footer { border-top: 1px solid var(--p-footer-border); padding: 28px 0; text-align: center; color: var(--grey-2); font-size: 13px; }
+    footer a { color: var(--grey-1); text-decoration: none; transition: color var(--transition); }
+    footer a:hover { color: var(--p-primary); }
+
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--p-primary); outline-offset: 3px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container fade-in delay-1">
+    <nav aria-label="Primary navigation">
+      <a href="../../index.html" class="logo" aria-label="Back to home">
+        <span class="logo-mark" aria-hidden="true">NE</span>
+        <span>NATHAN EHNES</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#approach">Approach</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#build">Build</a></li>
+        <li><a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="container hero-inner">
+      <div class="hero-kicker fade-in delay-2">1st Place · Embedded Capstone</div>
+      <h1 class="hero-title fade-in delay-3">Wildlife Soundscape Logger</h1>
+      <p class="hero-punchline fade-in delay-3">
+        Low-cost ESP32 audio logger for month-long field deployments in behavioral ecology research.
+      </p>
+      <p class="hero-school fade-in delay-4">
+        A semester-long capstone system that records 5-minute stereo WAV files at 44.1 kHz on a 60-minute duty cycle,
+        reducing maintenance compared with commercial acoustic monitors.
+      </p>
+
+      <div class="hero-meta fade-in delay-4">
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          ESP32 · I2S Audio · SPI MicroSD · WAV Encoding
+        </span>
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Team of 6 · Firmware Lead
+        </span>
+      </div>
+
+      <div class="hero-actions fade-in delay-5">
+        <a class="btn btn-primary" href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          View Repository
+        </a>
+        <a class="btn btn-secondary" href="#approach">Explore Architecture</a>
+      </div>
+
+      <figure class="hero-visual fade-in delay-6">
+        <div class="hero-visual-card">
+          <div class="device-wireframe" aria-label="Placeholder for field logger enclosure image"></div>
+          <div class="visual-specs">
+            <div class="spec-pill"><strong>Recording</strong><span>5 min / 60 min</span></div>
+            <div class="spec-pill"><strong>Audio</strong><span>44.1 kHz stereo WAV</span></div>
+            <div class="spec-pill"><strong>Storage</strong><span>SPI MicroSD at 1 MHz</span></div>
+            <div class="spec-pill"><strong>Power</strong><span>4–8 week target runtime</span></div>
+          </div>
+        </div>
+        <figcaption style="text-align:center; color: var(--grey-1); font-size: 13px; padding: 14px 18px 18px;">
+          Placeholder for field logger enclosure or deployment photo.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="overview" aria-labelledby="overview-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-3">
+        <h2 id="overview-heading">Problem Statement</h2>
+        <span class="count">— why the system mattered</span>
+      </div>
+
+      <div class="split-grid">
+        <div class="info-card fade-in delay-4">
+          <h3>Field monitoring needed to be low-maintenance.</h3>
+          <p>
+            A Western University biology professor was studying how urban noise affects wildlife behavior on campus.
+            Commercial acoustic monitors solved part of the problem, but their cost and two-week retrieval cycles made
+            long-term deployment cumbersome.
+          </p>
+        </div>
+        <div class="info-card fade-in delay-5">
+          <h3>The goal was a practical, affordable logger.</h3>
+          <p>
+            The team delivered a $77.50/unit ESP32-based logger that records month-long field deployments without battery
+            swaps or manual data retrieval, while remaining compatible with ecology analysis tools like Raven Pro and MATLAB.
+          </p>
+        </div>
+      </div>
+
+      <figure class="project-image fade-in delay-5">
+        <img src="./images/placeholder-wiring-schematic-submission.png" alt="Placeholder for wiring schematic showing ESP32, I2S microphone, and SPI microSD connections" />
+        <figcaption>Placeholder for wiring schematic: ESP32 I2S microphone input and SPI microSD interface.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="skills" aria-labelledby="skills-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="skills-heading">Technologies & Skills</h2>
+        <span class="count">— from firmware to validation</span>
+      </div>
+      <div class="skills-grid fade-in delay-5">
+        <span class="skill featured">Embedded C++</span>
+        <span class="skill featured">I2S Protocol Implementation</span>
+        <span class="skill featured">SPI File System Management</span>
+        <span class="skill">Audio Signal Analysis (FFT)</span>
+        <span class="skill">Hardware Integration</span>
+        <span class="skill">Power Management</span>
+        <span class="skill">Serial Communication & Logging</span>
+        <span class="skill">ESP32 / Arduino Framework</span>
+        <span class="skill">PlatformIO</span>
+        <span class="skill">WAV Encoding</span>
+        <span class="skill">MicroSD / FAT32</span>
+        <span class="skill">Duty-Cycle Scheduling</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="approach" aria-labelledby="approach-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="approach-heading">Technical Approach</h2>
+        <span class="count">— architecture and firmware choices</span>
+      </div>
+
+      <div class="split-grid">
+        <div class="flow-card fade-in delay-4">
+          <h3>Boot state machine</h3>
+          <p>
+            The logger initializes I2S and SD, creates a timestamped session folder, then loops through the production duty cycle:
+            record for five minutes, sleep for fifty-five minutes, and repeat.
+          </p>
+          <div class="flow-steps">
+            <div class="flow-step">Initialize I2S receiver with APLL clock and 4 KB × 4 DMA buffers.</div>
+            <div class="flow-step">Mount MicroSD over conservative SPI settings to reduce electrical noise.</div>
+            <div class="flow-step">Open WAV files, stream PCM data, and finalize headers on close.</div>
+            <div class="flow-step">Sleep between sessions while holding required clock and I2S state.</div>
+          </div>
+        </div>
+
+        <div class="info-card fade-in delay-5">
+          <h3>Design constraints</h3>
+          <p>
+            The system had to balance real-time audio capture, file writes, power draw, and late hardware arrival.
+            The firmware architecture intentionally separated I2S capture, WAV writing, SD initialization, and session management
+            so each subsystem could be tested independently.
+          </p>
+          <div class="architecture-list">
+            <div class="architecture-item">
+              <span class="number">01</span>
+              <div>
+                <h3>I2S capture</h3>
+                <p>44.1 kHz stereo, 32-bit samples, master receiver mode, APLL enabled.</p>
+              </div>
+            </div>
+            <div class="architecture-item">
+              <span class="number">02</span>
+              <div>
+                <h3>SD storage</h3>
+                <p>VSPI at 1 MHz with organized session folders and timestamped WAV files.</p>
+              </div>
+            </div>
+            <div class="architecture-item">
+              <span class="number">03</span>
+              <div>
+                <h3>Power schedule</h3>
+                <p>5-minute active recording plus 55-minute sleep to target multi-week autonomy.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <figure class="project-image fade-in delay-6">
+        <img src="./images/placeholder-program-flow-diagram-submission.pdf" alt="Placeholder for program flow diagram showing boot, I2S init, SD mount, recording, sleep, and file close" />
+        <figcaption>Placeholder for program flow diagram: logger state machine and recording cycle.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="results" aria-labelledby="results-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="results-heading">Key Results & Impact</h2>
+        <span class="count">— measurable outcomes</span>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card fade-in delay-4">
+          <div class="metric-value">1st</div>
+          <div class="metric-label">Design category winner</div>
+          <p>Won against roughly 20 competing ES1050 capstone teams.</p>
+        </div>
+        <div class="metric-card fade-in delay-5">
+          <div class="metric-value">$77.50</div>
+          <div class="metric-label">Unit cost</div>
+          <p>Significantly cheaper than $125–200 commercial alternatives.</p>
+        </div>
+        <div class="metric-card fade-in delay-4">
+          <div class="metric-value">4+ weeks</div>
+          <div class="metric-label">Target autonomy</div>
+          <p>Duty-cycle scheduling supports month-long field deployments.</p>
+        </div>
+        <div class="metric-card fade-in delay-5">
+          <div class="metric-value">600+</div>
+          <div class="metric-label">Prototype recordings</div>
+          <p>Extended validation in short-cycle mode before production timing.</p>
+        </div>
+      </div>
+
+      <figure class="project-image fade-in delay-5">
+        <img src="./images/placeholder-i2s-dummy-test-setup.png" alt="Placeholder for I2S dummy test setup used to validate WAV generation before microphone hardware arrived" />
+        <figcaption>Placeholder for I2S dummy test setup: simulated microphone stream used to validate the audio pipeline.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="challenges" aria-labelledby="challenges-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="challenges-heading">Design Challenges</h2>
+        <span class="count">— tradeoffs and validation</span>
+      </div>
+
+      <div class="challenge-grid">
+        <div class="challenge-card fade-in delay-4">
+          <div class="challenge-index">Challenge 1</div>
+          <h3>Electrical noise in parallel I2S and SPI</h3>
+          <p>
+            High-speed SPI writes created bit errors and clicking artifacts in I2S audio. The team reduced SPI clock speed to 1 MHz,
+            then validated the fix with spectral analysis and a 1 kHz reference tone.
+          </p>
+        </div>
+        <div class="challenge-card fade-in delay-5">
+          <div class="challenge-index">Challenge 2</div>
+          <h3>Firmware base selection under time pressure</h3>
+          <p>
+            A feature-rich reference repo failed to compile, so the project pivoted to a minimal working example. That enabled incremental
+            progress from serial I2S output to WAV generation, SD writes, and session management.
+          </p>
+        </div>
+        <div class="challenge-card fade-in delay-4">
+          <div class="challenge-index">Challenge 3</div>
+          <h3>Signal validation without microphone hardware</h3>
+          <p>
+            A separate ESP32 node generated sine-wave I2S data, letting the firmware validate the WAV encoder and SD pipeline before
+            the real microphone arrived.
+          </p>
+        </div>
+        <div class="challenge-card fade-in delay-5">
+          <div class="challenge-index">Challenge 4</div>
+          <h3>Duty-cycle timing complexity</h3>
+          <p>
+            Compile-time constants allowed the same state machine to run short validation cycles and production 60-minute cycles,
+            reducing regression risk before final submission.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team" aria-labelledby="team-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="team-heading">Team & Credits</h2>
+        <span class="count">— collaboration model</span>
+      </div>
+
+      <div class="team-card fade-in delay-5">
+        <strong>Six-person interdisciplinary team</strong> across mechanical, electrical, and firmware subteams.
+        I served as firmware lead and primary technical advisor, selecting the I2S + SPI strategy, defining protocol parameters,
+        guiding hardware integration, and supporting independent problem-solving across the team.
+      </div>
+    </div>
+  </section>
+
+  <section id="build" aria-labelledby="build-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="build-heading">Repository & Build</h2>
+        <span class="count">— setup and configuration</span>
+      </div>
+
+      <div class="build-grid">
+        <div class="info-card fade-in delay-4">
+          <h3>Build locally</h3>
+          <p>
+            The project uses PlatformIO with the Arduino framework, ESP32 board support, and the arduino-audio-tools WAV encoder.
+          </p>
+          <div class="code-block"><code>sudo apt install platformio git
+git clone https://github.com/NEhnes/mic_sd_logger
+cd mic_sd_logger/src/final_submission
+pio run -t upload
+pio device monitor -b 115200</code></div>
+        </div>
+
+        <div class="info-card fade-in delay-5">
+          <h3>Key configurations</h3>
+          <p>
+            I2S: 44.1 kHz, stereo, 32-bit samples, master RX mode, APLL enabled.
+            SD: 1 MHz SPI clock, GPIO 5 chip select, VSPI pins 18/19/23, FAT32 filesystem.
+            Power: 55-minute sleep with RTC/I2S active and low quiescent current.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section" aria-labelledby="contact-heading">
+    <div class="container">
+      <h2 id="contact-heading" class="cta-title fade-in delay-6">Built for real field constraints.</h2>
+      <p class="cta-sub fade-in delay-6">
+        The Wildlife Soundscape Logger shows pragmatic embedded engineering: low cost, clean subsystem boundaries,
+        signal-based validation, and power-aware firmware for unattended ecological monitoring.
+      </p>
+      <div class="cta-buttons fade-in delay-6">
+        <a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          Open GitHub
+        </a>
+        <a href="../../index.html" class="btn btn-secondary">Back to Home</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Wildlife Soundscape Logger · ESP32 embedded systems project · <a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">Repository</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32 WiFi RC Video Rover — Nathan Ehnes</title>
+  <meta name="description" content="A WiFi-controlled ESP32-S3 video rover with asynchronous motor control, live video streaming, bandwidth-aware frame skipping, and thermal management." />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       MODERN DOLCH DARK THEME — GOLD VARIANT
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+      --p-primary:      #d98f00;
+      --p-primary-alt:  #c28000;
+      --p-primary-soft: #6b4600;
+      --p-secondary:    #8a8a8a;
+      --p-secondary-lt: #6a6a6a;
+      --p-bg:           #2a2a2a;
+      --p-bg-alt:       #333333;
+      --p-surface:      #383838;
+      --p-ink:          #f0f0f0;
+      --p-ink-soft:     #c8c8c8;
+      --p-border:       rgba(240,240,240,0.07);
+      --p-border-pill:  rgba(240,240,240,0.09);
+      --p-tag-bg:       rgba(217, 143, 0, 0.12);
+      --p-tag-color:    #eb9b00;
+      --p-badge-bg:     rgba(217, 143, 0, 0.15);
+      --p-badge-color:  #ffb700;
+      --p-icon-bg:      rgba(217, 143, 0, 0.13);
+      --p-icon-color:   #d98f00;
+      --p-card-bg:      #333333;
+      --p-btn-primary-bg:   #d98f00;
+      --p-btn-primary-fg:   #1a1a1a;
+      --p-btn-secondary-bg: #383838;
+      --p-btn-secondary-fg: #f0f0f0;
+      --p-btn-secondary-border: rgba(240,240,240,0.18);
+      --p-punchline:    #d98f00;
+      --p-left-bar:     #ff5068;
+      --p-rotating-bg:  #f0f0f0;
+      --p-rotating-fg:  #2a2a2a;
+      --p-nav-hover:    #d98f00;
+      --p-footer-border: rgba(240,240,240,0.07);
+      --p-gold:         #eec945;
+
+      --green-1:    var(--p-primary-alt);
+      --green-2:    var(--p-primary);
+      --green-soft: var(--p-primary-soft);
+      --grey-1:     var(--p-secondary);
+      --grey-2:     var(--p-secondary-lt);
+      --beige-1:    var(--p-surface);
+      --beige-2:    var(--p-bg);
+      --beige-3:    var(--p-bg-alt);
+      --ink:        var(--p-ink);
+      --ink-soft:   var(--p-ink-soft);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    body, .skill, .project-card, .currently-card,
+    .leadership-block, .btn, header, footer, .rotating-tag,
+    .currently-icon, .project-badge, .project-tag, nav, .logo,
+    .logo-mark, .hero-punchline, h1, h2, h3 {
+      transition-property: background-color, color, border-color, box-shadow;
+      transition-duration: 0.4s;
+      transition-timing-function: ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--beige-2);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(217, 143, 0, 0.12), transparent 32rem),
+        radial-gradient(circle at 80% 20%, rgba(255, 80, 104, 0.08), transparent 28rem);
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease-out forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    .delay-5 { animation-delay: 0.7s; }
+    .delay-6 { animation-delay: 0.85s; }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { opacity: 1; transform: none; animation: none; }
+    }
+
+    header { padding: 28px 0 12px; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 600; color: var(--ink); text-decoration: none;
+      font-size: 15px; letter-spacing: -0.01em;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--green-1), var(--green-2));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--p-btn-primary-fg); font-weight: 700; font-size: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-links { display: flex; gap: 24px; list-style: none; flex-wrap: wrap; }
+    .nav-links a { color: var(--grey-1); text-decoration: none; font-size: 14px; font-weight: 500; transition: color var(--transition); }
+    .nav-links a:hover { color: var(--p-nav-hover); }
+
+    .hero { padding: 100px 0 80px; text-align: left; background: var(--p-bg); }
+
+    .hero-inner { position: relative; z-index: 1; }
+
+    .hero-name {
+      font-size: clamp(2.65rem, 7vw, 5.25rem);
+      line-height: 0.9;
+      font-weight: 600;
+      letter-spacing: -0.05em;
+      color: var(--ink);
+      margin-bottom: 24px;
+      margin-left: -3px;
+    }
+
+    .hero-punchline {
+      font-size: clamp(1.25rem, 3vw, 1.875rem);
+      font-weight: 350;
+      color: var(--p-punchline);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .hero-school {
+      font-size: clamp(1rem, 2vw, 1.125rem);
+      color: var(--grey-1);
+      margin-bottom: 32px;
+      line-height: 1.5;
+      max-width: 720px;
+    }
+
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 36px; }
+    .meta-item { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+    .meta-icon { width: 16px; height: 16px; color: var(--green-2); flex: 0 0 auto; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      cursor: pointer; border: 1px solid transparent; transition: all var(--transition);
+    }
+    .btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-secondary { background: var(--p-btn-secondary-bg); color: var(--p-btn-secondary-fg); border-color: var(--p-btn-secondary-border); }
+    .btn-secondary:hover { background: var(--p-bg-alt); border-color: var(--p-primary); color: var(--p-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+    section { padding: 48px 0; }
+    .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+    h2 { font-size: 1.25rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+    .section-header .count { color: var(--grey-2); font-size: 0.9rem; }
+
+    .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .skill {
+      background: var(--p-tag-bg); color: var(--p-tag-color);
+      padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
+      border: 1px solid var(--p-border-pill); cursor: default; transition: all var(--transition);
+    }
+    .skill:hover { background: var(--p-primary); color: var(--p-btn-primary-fg); transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--p-primary); }
+    .skill.featured { background: var(--p-primary); color: var(--p-btn-primary-fg); border-color: var(--p-primary); }
+    .skill.featured::before { content: "★ "; }
+
+    .rotating-tag-wrapper { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: var(--grey-1); font-size: 14px; }
+    .rotating-tag {
+      display: inline-block; background: var(--p-rotating-bg); color: var(--p-rotating-fg);
+      padding: 4px 12px; border-radius: 6px; font-weight: 500; min-width: 118px;
+      text-align: center; transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .project-image {
+      margin: 28px 0;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(217, 143, 0, 0.12), rgba(255, 80, 104, 0.08)),
+        repeating-linear-gradient(45deg, rgba(240,240,240,0.045) 0 1px, transparent 1px 18px);
+      border: 1px solid var(--p-border);
+    }
+
+    .project-image img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      opacity: 0.58;
+      mix-blend-mode: screen;
+    }
+
+    .project-image figcaption {
+      text-align: center;
+      color: var(--grey-1);
+      font-size: 13px;
+      margin-top: 8px;
+      padding: 0 16px 16px;
+    }
+
+    .currently-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 600px) { .currently-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .currently-card {
+      background: var(--p-surface);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all var(--transition);
+      border: 1px solid var(--p-border);
+    }
+    .currently-card:hover { background: var(--p-bg-alt); box-shadow: var(--shadow-sm); }
+
+    .currently-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--p-icon-bg); color: var(--p-icon-color);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;
+    }
+    .currently-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey-2); font-weight: 600; margin-bottom: 4px; }
+    .currently-text { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+
+    .leadership-block {
+      background: var(--p-bg-alt);
+      border-left: 3px solid var(--p-left-bar);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 24px 28px;
+      color: var(--ink-soft);
+      font-size: 15px;
+      line-height: 1.65;
+      border: 1px solid var(--p-border);
+    }
+    .leadership-block strong { color: var(--ink); }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 720px) {
+      .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--p-surface);
+      border: 1px solid var(--p-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      top: -1px; right: -1px;
+      width: 24px; height: 24px;
+      border-top: 2px solid var(--p-primary);
+      border-right: 2px solid var(--p-primary);
+      border-top-right-radius: var(--radius-md);
+      opacity: 0.4;
+    }
+    .metric-value { font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 700; color: var(--p-primary); letter-spacing: -0.03em; line-height: 1; }
+    .metric-label { color: var(--grey-1); font-size: 14px; margin-top: 8px; line-height: 1.45; }
+
+    .approach-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 760px) {
+      .approach-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .approach-card {
+      background: var(--p-surface);
+      border: 1px solid var(--p-border);
+      border-radius: var(--radius-md);
+      padding: 22px;
+    }
+    .approach-card h3 { font-size: 1rem; color: var(--ink); margin-bottom: 8px; }
+    .approach-card p { color: var(--grey-1); font-size: 14px; line-height: 1.6; }
+
+    .challenge-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      counter-reset: challenge;
+    }
+
+    .challenge-card {
+      counter-increment: challenge;
+      background: var(--p-card-bg);
+      border: 1px solid var(--p-border);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .challenge-card::before {
+      content: counter(challenge);
+      position: absolute;
+      right: 20px;
+      top: 14px;
+      font-size: 3rem;
+      line-height: 1;
+      font-weight: 700;
+      color: rgba(217, 143, 0, 0.12);
+    }
+    .challenge-card h3 { font-size: 1.05rem; color: var(--ink); margin-bottom: 10px; max-width: 75%; }
+    .challenge-card p { color: var(--grey-1); font-size: 14px; line-height: 1.6; }
+
+    .cta-section { text-align: center; padding: 64px 0 80px; }
+    .cta-title { font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 700; color: var(--ink); margin-bottom: 12px; letter-spacing: -0.01em; }
+    .cta-sub { color: var(--grey-1); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    footer { border-top: 1px solid var(--p-footer-border); padding: 28px 0; text-align: center; color: var(--grey-2); font-size: 13px; }
+    footer a { color: var(--grey-1); text-decoration: none; transition: color var(--transition); }
+    footer a:hover { color: var(--p-primary); }
+
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--p-primary); outline-offset: 3px; border-radius: 4px; }
+
+    @media (max-width: 767px) {
+      .hero { padding: 76px 0 60px; }
+      .project-image img { aspect-ratio: 4 / 3; }
+      .section-header { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container fade-in delay-1">
+    <nav aria-label="Primary navigation">
+      <a href="../../index.html" class="logo" aria-label="Back to home">
+        <span class="logo-mark" aria-hidden="true">NE</span>
+        <span>NATHAN EHNES</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" rel="noopener">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero">
+    <div class="container hero-inner">
+      <h1 class="hero-name fade-in delay-2">ESP32 WiFi RC Video Rover</h1>
+      <p class="hero-punchline fade-in delay-3">Live video, joystick control, and real-time embedded trade-offs on a tiny ESP32-S3 platform.</p>
+      <p class="hero-school fade-in delay-3">
+        A WiFi-controlled rover featuring an OV2640 camera stream, binary WebSocket control, adaptive frame skipping,
+        active cooling, and a measured one-hour runtime on a 3S LiPo pack.
+      </p>
+      <div class="hero-meta fade-in delay-4">
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5M2 12l10 5 10-5"/></svg>
+          ESP32-S3 · OV2640 · WebSocket · Real-time Control
+        </span>
+      </div>
+      <div class="hero-actions fade-in delay-5">
+        <a class="btn btn-secondary" href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          View Repository
+        </a>
+        <a class="btn btn-primary" href="https://drive.google.com/drive/u/0/folders/1Js6mgGfnNzO188bYxTEp0a3W_XoGjvWt" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></polyline></svg>
+          Build Photos & Videos
+        </a>
+      </div>
+
+      <figure class="project-image fade-in delay-5">
+        <img src="./images/rover-hero-placeholder.jpg" alt="ESP32 WiFi RC Video Rover build photo placeholder" />
+        <figcaption>Placeholder for a hero build photo or short rover demo video frame.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="overview" aria-labelledby="overview-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-3">
+        <h2 id="overview-heading">Problem statement</h2>
+        <span class="count">— real-time control under wireless constraints</span>
+      </div>
+      <div class="leadership-block fade-in delay-4">
+        <strong>Responsive teleoperation is a latency problem before it is a video problem.</strong>
+        The rover streams live camera frames and receives motor commands over the same WiFi link, but joystick response cannot wait behind slow or dropped video frames. The project solves that by separating control from video, monitoring WebSocket buffer pressure, and degrading visual feedback before control quality collapses.
+      </div>
+    </div>
+  </section>
+
+  <section id="architecture" aria-labelledby="architecture-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="architecture-heading">Technical approach</h2>
+        <span class="count">— asynchronous architecture and graceful degradation</span>
+      </div>
+
+      <figure class="project-image fade-in delay-4">
+        <img src="./images/architecture-diagram-placeholder.jpg" alt="System architecture diagram placeholder" />
+        <figcaption>Placeholder for an architecture block diagram: browser client, binary WebSocket link, ESP32-S3, camera, motor driver, and fan.</figcaption>
+      </figure>
+
+      <div class="approach-grid">
+        <article class="approach-card fade-in delay-4">
+          <h3>Decoupled control loop</h3>
+          <p>Motor commands arrive through binary WebSocket messages and update immediately. Video frames are captured and sent asynchronously, so a congested stream cannot block the latency-critical motor path.</p>
+        </article>
+        <article class="approach-card fade-in delay-5">
+          <h3>Buffer-aware frame skipping</h3>
+          <p>Before sending a JPEG frame, firmware checks WebSocket transmit capacity. If the buffer is full, the frame is skipped rather than stalling the rover.</p>
+        </article>
+        <article class="approach-card fade-in delay-5">
+          <h3>DRAM-first frame buffers</h3>
+          <p>The camera frame buffer is placed in DRAM with double buffering to reduce compression and transmission latency, trading scarce heap space for faster real-time response.</p>
+        </article>
+        <article class="approach-card fade-in delay-6">
+          <h3>Thermal and power management</h3>
+          <p>Continuous WiFi, JPEG encoding, and camera ISP work create thermal stress. The design uses a heat sink, 5V mini fan, temperature monitoring, and dynamic framerate throttling.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" aria-labelledby="results-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="results-heading">Key results</h2>
+        <span class="count">— measured highlights from the README</span>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card fade-in delay-4">
+          <div class="metric-value">&lt;50ms</div>
+          <div class="metric-label">Control latency on good WiFi with no video loss.</div>
+        </div>
+        <div class="metric-card fade-in delay-4">
+          <div class="metric-value">&lt;150ms</div>
+          <div class="metric-label">Motor latency kept independent of video stream quality.</div>
+        </div>
+        <div class="metric-card fade-in delay-5">
+          <div class="metric-value">~10 FPS</div>
+          <div class="metric-label">SVGA video stream at JPEG quality 30 on good WiFi.</div>
+        </div>
+        <div class="metric-card fade-in delay-5">
+          <div class="metric-value">1–3 FPS</div>
+          <div class="metric-label">Adaptive video on cellular while maintaining control.</div>
+        </div>
+        <div class="metric-card fade-in delay-6">
+          <div class="metric-value">~1 hour</div>
+          <div class="metric-label">Real-world runtime on a 3S 650mAh LiPo battery.</div>
+        </div>
+        <div class="metric-card fade-in delay-6">
+          <div class="metric-value">65–75°C</div>
+          <div class="metric-label">Sustained ESP32 junction temperature with active fan cooling.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="challenges" aria-labelledby="challenges-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="challenges-heading">Design challenges</h2>
+        <span class="count">— constraints that shaped the system</span>
+      </div>
+
+      <div class="challenge-list">
+        <article class="challenge-card fade-in delay-4">
+          <h3>Latency on bandwidth-constrained wireless</h3>
+          <p>Sequential video and motor processing would make joystick response depend on camera frame timing. The solution uses asynchronous WebSocket handling so motor updates are never skipped.</p>
+        </article>
+        <article class="challenge-card fade-in delay-5">
+          <h3>WebSocket buffer exhaustion under congestion</h3>
+          <p>Weak mobile links can fill the transmit buffer. The rover checks buffer capacity before sending frames and skips video rather than blocking control.</p>
+        </article>
+        <article class="challenge-card fade-in delay-5">
+          <h3>Memory architecture and latency trade-offs</h3>
+          <p>DRAM frame buffers consume precious heap space but reduce frame access and compression latency compared with PSRAM.</p>
+        </article>
+        <article class="challenge-card fade-in delay-6">
+          <h3>Thermal stress in a small footprint</h3>
+          <p>Continuous WiFi, encoding, and camera ISP work can push the ESP32 toward throttling. Active fan cooling and temperature-aware throttling preserve performance.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="currently" aria-labelledby="currently-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-5">
+        <h2 id="currently-heading">Project status</h2>
+        <span class="count">— what is built and what comes next</span>
+      </div>
+      <div class="currently-grid fade-in delay-5">
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">⌬</div>
+          <div>
+            <div class="currently-label">Status</div>
+            <div class="currently-text">Functional prototype with documented firmware and browser interface.</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">⚙</div>
+          <div>
+            <div class="currently-label">Building</div>
+            <div class="currently-text">Real-world performance demos, CAD chassis files, and motor driver schematics.</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">◐</div>
+          <div>
+            <div class="currently-label">Exploring</div>
+            <div class="currently-text">Autonomous navigation, RTP video, FEC, OTA updates, and multi-rover networking.</div>
+          </div>
+        </div>
+        <div class="currently-card">
+          <div class="currently-icon" aria-hidden="true">→</div>
+          <div>
+            <div class="currently-label">Role</div>
+            <div class="currently-text">Solo embedded systems project by Nathan Ehnes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills" aria-labelledby="skills-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-4">
+        <h2 id="skills-heading">Technologies used</h2>
+        <span class="count">— embedded, wireless, hardware, and systems design</span>
+      </div>
+      <div class="rotating-tag-wrapper fade-in delay-4" aria-live="polite">
+        <span>Core focus:</span>
+        <span class="rotating-tag" id="rotatingTag">Real-time control</span>
+      </div>
+      <div class="skills-grid fade-in delay-5">
+        <span class="skill featured">Embedded C++</span>
+        <span class="skill featured">ESP32-S3</span>
+        <span class="skill featured">Real-time Control</span>
+        <span class="skill">Arduino Framework</span>
+        <span class="skill">PlatformIO</span>
+        <span class="skill">AsyncTCP</span>
+        <span class="skill">ESPAsyncWebServer</span>
+        <span class="skill">Binary WebSocket</span>
+        <span class="skill">OV2640 Camera</span>
+        <span class="skill">JPEG Streaming</span>
+        <span class="skill">Nipple.js</span>
+        <span class="skill">HTML5 / JavaScript</span>
+        <span class="skill">TB6612FNG Motor Driver</span>
+        <span class="skill">PWM Motor Control</span>
+        <span class="skill">Power Budgeting</span>
+        <span class="skill">Thermal Management</span>
+        <span class="skill">WiFi Networking</span>
+        <span class="skill">Systems Design</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="credits-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-5">
+        <h2 id="credits-heading">Credits</h2>
+        <span class="count">— author and resources</span>
+      </div>
+      <div class="leadership-block fade-in delay-6">
+        <strong>Nathan Ehnes</strong> — Electrical & AI Systems Engineering (BESc), University of Western Ontario, Class of 2029.
+        Inspiration came from reconnaissance drones in <em>Rainbow Six Siege</em>: small, fast platforms that provide real-time feedback in difficult environments.
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section" aria-labelledby="links-heading">
+    <div class="container">
+      <h2 id="links-heading" class="cta-title fade-in delay-6">Explore the rover.</h2>
+      <p class="cta-sub fade-in delay-6">Open the firmware repository, review build media, or use the project as a reference for latency-aware embedded system design.</p>
+      <div class="cta-buttons fade-in delay-6">
+        <a href="https://github.com/NEhnes/ESP32-WiFi-RC-Video-Rover" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          GitHub Repo
+        </a>
+        <a href="https://drive.google.com/drive/u/0/folders/1Js6mgGfnNzO188bYxTEp0a3W_XoGjvWt" target="_blank" rel="noopener" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></polyline></svg>
+          Build Media
+        </a>
+        <a href="../../index.html" class="btn btn-secondary">Back to Home</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Built from the ESP32-WiFi-RC-Video-Rover README with the Modern Dolch Gold theme.</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const tags = ["Real-time control","Bandwidth management","Thermal design","Power budgeting","Wireless systems"];
+    const el = document.getElementById("rotatingTag");
+    if (!el) return;
+    let i = 0;
+    setInterval(() => {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(-4px)";
+      setTimeout(() => {
+        i = (i + 1) % tags.length;
+        el.textContent = tags[i];
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      }, 300);
+    }, 2400);
+  })();
+</script>
+
+</body>
+</html>
