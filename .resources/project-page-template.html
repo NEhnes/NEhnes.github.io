@@ -3,30 +3,38 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wildlife Soundscape Logger — Nathan Ehnes</title>
-<meta name="description" content="An ESP32-based outdoor low-power audio logging system designed for unattended behavioral ecology field research at Western University." />
+<title>[PROJECT NAME] — Nathan Ehnes</title>
+<meta name="description" content="[One-sentence project description for SEO and link previews — keep under 160 chars.]" />
 <style>
 
-/* ═══════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════
    MODERN DOLCH DARK — GOLD VARIANT
-   ───────────────────────────────────────────────────────────────────
+   ───────────────────────────────────────────────────────────────────────
    Primary accent:   #d98f00  gold  — buttons, active tags, headings
    Secondary accent: #c86428  amber — left-bar card reveals, borders
-   ═══════════════════════════════════════════════════════════════════ */
+
+   To experiment with the secondary accent, change --p-secondary-accent.
+   Some options to try:
+     #c86428  warm amber  (current — harmonious with gold, still distinct)
+     #e07b3b  brighter    (more orange, higher contrast)
+     #8b3a1e  deep rust   (darker, more serious)
+     #b05a00  deep amber  (closer to the primary gold family)
+   ═══════════════════════════════════════════════════════════════════════ */
 :root {
   /* PRIMARY GOLD ACCENT */
   --p-primary:          #d98f00;
   --p-primary-alt:      #c28000;
   --p-primary-soft:     #6b4600;
 
-  /* SECONDARY ACCENT */
+  /* SECONDARY ACCENT — experiment here ─────────────────────────────── */
   --p-secondary-accent: #c86428;
+  /* ─────────────────────────────────────────────────────────────────── */
 
   /* NEUTRALS */
   --p-secondary:        #8a8a8a;
   --p-secondary-lt:     #6a6a6a;
 
-  /* BACKGROUNDS (dark → mid → light surface) */
+  /* BACKGROUNDS  (dark → mid → light surface) */
   --p-bg:               #2a2a2a;
   --p-bg-alt:           #333333;
   --p-surface:          #383838;
@@ -95,6 +103,7 @@ body {
   overflow-x: hidden;
 }
 
+/* Theme transitions (applied broadly so future tweaks look smooth) */
 body, .skill, .impl-card, .challenge-card, .metric-card, .arch-card,
 .overview-card, .build-card, .btn, header, footer, nav,
 .logo, .logo-mark, h1, h2, h3 {
@@ -138,6 +147,7 @@ h2 {
 }
 p { color: var(--ink-soft); line-height: 1.7; }
 
+/* Inline code within prose */
 :not(pre) > code {
   background: var(--p-surface);
   color: var(--p-tag-color);
@@ -251,6 +261,7 @@ nav {
   overflow: hidden;
 }
 
+/* Dotted grid (from main page project card banners) */
 .hero::before {
   content: "";
   position: absolute;
@@ -262,6 +273,7 @@ nav {
   z-index: 0;
 }
 
+/* Radial fade to keep the dot grid atmospheric, not busy */
 .hero::after {
   content: "";
   position: absolute;
@@ -273,6 +285,9 @@ nav {
 
 .hero-inner { position: relative; z-index: 1; }
 
+/* ── Eyebrow badge ─────────────────────────────────────────────── */
+/* Default: gold-tinted badge with glowing dot.                    */
+/* Add class .gold for 1st-place / award variants (see below).     */
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -287,6 +302,7 @@ nav {
   letter-spacing: 0.07em;
   margin-bottom: 20px;
 }
+/* Pulsing dot indicator */
 .hero-eyebrow::before {
   content: "";
   width: 6px;
@@ -296,6 +312,7 @@ nav {
   box-shadow: 0 0 8px var(--p-primary);
   flex-shrink: 0;
 }
+/* Gold variant — 1st Place Winner, award badges */
 .hero-eyebrow.gold {
   background: rgba(238,201,69,0.15);
   color: var(--p-gold);
@@ -305,6 +322,7 @@ nav {
   box-shadow: 0 0 8px var(--p-gold);
 }
 
+/* ── Title & punchline ─────────────────────────────────────────── */
 .hero-title {
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   line-height: 1.05;
@@ -323,6 +341,8 @@ nav {
   max-width: 720px;
 }
 
+/* ── Hero meta — exactly 3 slots ───────────────────────────────── */
+/* Slot 1: Team size & role  |  Slot 2: Key tech  |  Slot 3: Key tech */
 .hero-meta {
   display: flex;
   flex-wrap: wrap;
@@ -344,6 +364,7 @@ nav {
   flex-shrink: 0;
 }
 
+/* ── Hero actions — GitHub only, no back-to-home ──────────────── */
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -352,6 +373,8 @@ nav {
 
 /* ═══════════════════════════════════════════════════════════════════
    HERO VISUAL
+   Angled corner accent (from main page project cards).
+   Two fill options in the markup: spec-pill layout or real image.
    ═══════════════════════════════════════════════════════════════════ */
 .hero-visual {
   margin-top: 52px;
@@ -366,6 +389,7 @@ nav {
   position: relative;
 }
 
+/* Angled corner (key accent — not applied to all cards) */
 .hero-visual::before {
   content: "";
   position: absolute;
@@ -391,6 +415,7 @@ nav {
   position: relative;
 }
 
+/* Subtle grid lines inside the hero visual card */
 .hero-visual-inner::before {
   content: "";
   position: absolute;
@@ -402,6 +427,7 @@ nav {
   pointer-events: none;
 }
 
+/* ── Device wireframe placeholder ─────────────────────────────── */
 .device-wireframe {
   position: relative;
   z-index: 1;
@@ -419,6 +445,7 @@ nav {
   font-weight: 500;
   text-align: center;
 }
+/* Dashed inner border */
 .device-wireframe::before {
   content: "";
   position: absolute;
@@ -429,6 +456,7 @@ nav {
 }
 .device-wireframe span { position: relative; z-index: 1; }
 
+/* ── Spec pills ────────────────────────────────────────────────── */
 .visual-specs { position: relative; z-index: 1; display: grid; gap: 12px; }
 .spec-pill {
   display: flex;
@@ -448,6 +476,7 @@ nav {
   text-align: right;
 }
 
+/* Hero visual figcaption */
 .hero-visual > figcaption {
   color: var(--grey-1);
   font-size: 13px;
@@ -458,6 +487,7 @@ nav {
 /* ═══════════════════════════════════════════════════════════════════
    IMAGE PLACEHOLDERS & REAL IMAGES
    ═══════════════════════════════════════════════════════════════════ */
+/* Crosshatch placeholder — use until real photos are ready */
 .img-placeholder {
   width: 100%;
   border-radius: var(--radius-md);
@@ -482,6 +512,23 @@ nav {
   font-size: 11px;
 }
 .img-placeholder.r-16-9 { aspect-ratio: 16 / 9; }
+.img-placeholder.r-4-3  { aspect-ratio: 4 / 3; }
+.img-placeholder.r-1-1  { aspect-ratio: 1 / 1; }
+
+/* Real image frame — swap in when photos arrive */
+.project-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--p-border);
+  background: var(--p-surface);
+}
+.project-image img { display: block; width: 100%; object-fit: cover; }
+.project-image figcaption {
+  color: var(--grey-1);
+  font-size: 13px;
+  text-align: center;
+  padding: 10px 16px 14px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    PROBLEM STATEMENT BLOCK
@@ -524,6 +571,9 @@ nav {
 
 /* ═══════════════════════════════════════════════════════════════════
    ARCHITECTURE — PIPELINE VARIANT
+   Linear data-flow: sensor → MCU → actuator etc.
+   Recommended ≤4 blocks for full tablet compatibility; ≤5 on desktop.
+   Below 640px: stacks vertically, arrows rotate 90°.
    ═══════════════════════════════════════════════════════════════════ */
 .arch-pipeline {
   display: flex;
@@ -538,6 +588,7 @@ nav {
   overflow: hidden;
 }
 
+/* Dot grid inside pipeline */
 .arch-pipeline::before {
   content: "";
   position: absolute;
@@ -598,7 +649,60 @@ nav {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   ARCHITECTURE — GRID VARIANT
+   Non-linear: multi-node, protocol layers, distributed systems.
+   ═══════════════════════════════════════════════════════════════════ */
+.arch-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) { .arch-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.arch-card {
+  background: var(--p-card-bg);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  transition: all var(--transition);
+}
+.arch-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--p-primary-soft);
+}
+.arch-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--p-icon-bg);
+  color: var(--p-icon-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.arch-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.arch-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
+.arch-card code {
+  display: inline-block;
+  background: var(--p-surface);
+  color: var(--p-tag-color);
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    IMPLEMENTATION CARDS
+   Left-bar amber reveal animates in on hover (from main page cards).
    ═══════════════════════════════════════════════════════════════════ */
 .impl-grid {
   display: grid;
@@ -616,6 +720,7 @@ nav {
   overflow: hidden;
   transition: all var(--transition);
 }
+/* Left-bar reveal on hover */
 .impl-card::after {
   content: "";
   position: absolute;
@@ -650,6 +755,8 @@ nav {
 
 /* ═══════════════════════════════════════════════════════════════════
    METRICS / RESULTS GRID
+   Angled corner accent on each card (key visual — not overused).
+   2-col on tablet, 3-col on desktop.
    ═══════════════════════════════════════════════════════════════════ */
 .metrics-grid {
   display: grid;
@@ -668,6 +775,7 @@ nav {
   overflow: hidden;
   transition: all var(--transition);
 }
+/* Radial glow in top-right corner */
 .metric-card::before {
   content: "";
   position: absolute;
@@ -675,6 +783,7 @@ nav {
   background: radial-gradient(circle at top right, rgba(217,143,0,0.12), transparent 40%);
   pointer-events: none;
 }
+/* Angled corner — grows on hover */
 .metric-card::after {
   content: "";
   position: absolute;
@@ -707,6 +816,7 @@ nav {
 
 /* ═══════════════════════════════════════════════════════════════════
    DESIGN CHALLENGE CARDS
+   Left-bar reveal on hover (amber secondary accent).
    ═══════════════════════════════════════════════════════════════════ */
 .challenge-grid {
   display: grid;
@@ -724,6 +834,7 @@ nav {
   overflow: hidden;
   transition: all var(--transition);
 }
+/* Left-bar reveal on hover */
 .challenge-card::after {
   content: "";
   position: absolute;
@@ -808,6 +919,7 @@ nav {
 }
 .build-card > p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin-bottom: 14px; }
 
+/* Syntax-highlighted code blocks */
 .code-block {
   background: #1e1e1e;
   border: 1px solid var(--p-border);
@@ -826,6 +938,7 @@ nav {
 }
 .code-block .hl { color: var(--p-tag-color); }
 
+/* File/directory tree */
 pre.file-tree {
   background: var(--p-bg-alt);
   border: 1px solid var(--p-border);
@@ -842,6 +955,7 @@ pre.file-tree {
 pre.file-tree .dir  { color: var(--p-tag-color); }
 pre.file-tree .note { color: var(--grey-2); }
 
+/* Wiring / pin table */
 .wire-table {
   width: 100%;
   border-collapse: collapse;
@@ -923,8 +1037,87 @@ a:focus-visible, button:focus-visible {
 </head>
 <body>
 
+<!--
+═══════════════════════════════════════════════════════════════════════
+  AI CONTEXT — PROJECT PAGE TEMPLATE
+  Nathan Ehnes · Modern Dolch Dark · Gold Variant
+  Last revised: 2026
+═══════════════════════════════════════════════════════════════════════
+
+  PURPOSE
+  ───────
+  Master template for all portfolio project pages.
+  Copy this file, delete sections marked OPTIONAL that don't apply,
+  fill every [PLACEHOLDER] in brackets, and swap img-placeholder
+  divs for real <img> elements when photos are ready.
+
+  SECTION REFERENCE
+  ─────────────────
+  REQUIRED — must appear on every page.
+  OPTIONAL — include only when the project has content for it.
+
+  1  Header + Nav             REQUIRED
+  2  Hero                     REQUIRED
+  3  Problem Statement        REQUIRED
+  4  Project Overview         OPTIONAL  (use when hero punchline alone isn't enough)
+  5  Technical Architecture   OPTIONAL  (hardware / firmware / systems projects)
+  6  Implementation Details   REQUIRED
+  7  Results & Metrics        OPTIONAL  (use when you have hard numbers)
+  8  Design Challenges        REQUIRED
+  9  Skills & Technologies    REQUIRED
+  10 Build & Repository       OPTIONAL  (use when repo is public and buildable)
+  11 Status & Roadmap         OPTIONAL  (use for in-progress / actively maintained)
+  12 Team & Credits           OPTIONAL  (use when collaboration is significant)
+  13 Footer CTA               REQUIRED
+  14 HTML Footer              REQUIRED
+
+  NAVIGATION RULES
+  ────────────────
+  Back-to-home  →  header logo  +  footer CTA button  only.
+                   NEVER under the hero.
+  GitHub link   →  hero actions  +  footer CTA button.
+  Nav links     →  section anchors within this page  +  GitHub external.
+
+  HERO META — EXACTLY 3 SLOTS
+  ────────────────────────────
+  Slot 1  Team size & role     "Solo Project" / "Team of 6 · Firmware Lead"
+  Slot 2  Key technical tag    platform, protocol, or primary tool
+  Slot 3  Key technical tag    constraint, outcome, or specialization
+
+  ARCHITECTURE DIAGRAM VARIANTS — PICK ONE
+  ─────────────────────────────────────────
+  arch-pipeline  →  linear data-flow (≤4 blocks for tablet, ≤5 desktop)
+  arch-grid      →  non-linear, multi-node, layered stacks
+
+  CARDS WITH ANGLED CORNER ACCENT
+  ────────────────────────────────
+  .hero-visual, .metric-card
+  (not on every card — used selectively as a visual signal)
+
+  CARDS WITH LEFT-BAR HOVER REVEAL (amber)
+  ─────────────────────────────────────────
+  .impl-card, .challenge-card
+
+  ICON STYLE
+  ──────────
+  All icons: viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2"  — single flat color, no emoji, no multi-color.
+  Swap SVG paths freely; the container class handles sizing.
+
+  EYEBROW BADGE VARIANTS
+  ──────────────────────
+  Default (amber):  <div class="hero-eyebrow">In Progress</div>
+  Gold (award):     <div class="hero-eyebrow gold">1st Place Winner</div>
+  Other text options: "Personal Project" / "Design Team" / "Capstone" / "2026"
+
+═══════════════════════════════════════════════════════════════════════
+-->
+
+
 <!-- ═══════════════════════════════════════════════════════════════════
-     1. HEADER + NAV
+     1. HEADER + NAV  (REQUIRED)
+     Logo = the only back-to-home affordance above the footer.
+     Nav links = section anchors on this page + GitHub external.
      ═══════════════════════════════════════════════════════════════════ -->
 <header>
   <div class="container fade-in delay-1">
@@ -934,13 +1127,12 @@ a:focus-visible, button:focus-visible {
         <span>NATHAN EHNES</span>
       </a>
       <ul class="nav-links">
+        <!-- Add/remove anchors to match sections present on this page -->
         <li><a href="#problem">Problem</a></li>
         <li><a href="#architecture">Architecture</a></li>
-        <li><a href="#implementation">Implementation</a></li>
         <li><a href="#results">Results</a></li>
-        <li><a href="#challenges">Challenges</a></li>
         <li><a href="#build">Build</a></li>
-        <li><a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a href="https://github.com/NEhnes/[REPO]" target="_blank" rel="noopener">GitHub ↗</a></li>
       </ul>
     </nav>
   </div>
@@ -950,23 +1142,28 @@ a:focus-visible, button:focus-visible {
 <main>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     2. HERO
+     2. HERO  (REQUIRED)
      ═══════════════════════════════════════════════════════════════════ -->
 <section class="hero" id="hero">
   <div class="container hero-inner">
 
-    <div class="hero-eyebrow gold fade-in delay-2">
-      1st Place Winner
+    <!-- Eyebrow badge — default amber or .gold for award/1st-place -->
+    <div class="hero-eyebrow fade-in delay-2">
+      In Progress
+      <!-- Options: "1st Place Winner" (add class="hero-eyebrow gold") /
+                   "Personal Project" / "Design Team" / "Capstone" / "[Year]" -->
     </div>
 
-    <h1 class="hero-title fade-in delay-2">Wildlife Soundscape Logger</h1>
+    <h1 class="hero-title fade-in delay-2">[Project Title]</h1>
 
     <p class="hero-punchline fade-in delay-3">
-      An ESP32-based outdoor low-power audio logging system engineered for autonomous behavioral ecology field research.
+      [One punchy sentence. What it does and why it matters.]
     </p>
 
+    <!-- Exactly 3 meta items — team/role | key tech | key tech -->
     <div class="hero-meta fade-in delay-4">
 
+      <!-- Slot 1: Team size & role -->
       <span class="meta-item">
         <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -974,61 +1171,80 @@ a:focus-visible, button:focus-visible {
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
-        Team of 6 · Firmware Lead
+        Solo Project <!-- or "Team of 6 · Firmware Lead" -->
       </span>
 
+      <!-- Slot 2: Key technical platform / protocol -->
       <span class="meta-item">
         <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <rect x="4" y="4" width="16" height="16" rx="2"/>
           <rect x="9" y="9" width="6" height="6"/>
           <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
         </svg>
-        ESP32 · I²S Audio · SPI Storage
+        [Platform] · [Protocol] · [Key tool]
       </span>
 
+      <!-- Slot 3: Key constraint, outcome, or specialization -->
       <span class="meta-item">
         <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <polygon points="12 2 2 7 12 12 22 7 12 2"/>
           <polyline points="2 17 12 22 22 17"/>
           <polyline points="2 12 12 17 22 12"/>
         </svg>
-        4+ Week Autonomous Power Target
+        [Key constraint or performance target]
       </span>
 
     </div>
 
+    <!-- Hero actions — GitHub only. Back-to-home is in header logo & footer CTA. -->
     <div class="hero-actions fade-in delay-5">
-      <a class="btn btn-primary" href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">
+      <a class="btn btn-primary" href="https://github.com/NEhnes/[REPO]" target="_blank" rel="noopener">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
         </svg>
         View Repository
       </a>
+      <!-- Optional second button — an anchor to a key section, never back-to-home -->
       <a class="btn btn-secondary" href="#architecture">Explore Architecture</a>
     </div>
+
+    <!-- ── Hero Visual ──────────────────────────────────────────────
+         OPTION A: Spec-pill layout (hardware projects, pre-photo).
+         OPTION B: Full-width image — see commented block below.
+         Delete whichever you don't use.
+         ─────────────────────────────────────────────────────────── -->
 
     <!-- OPTION A: Spec pills + device wireframe -->
     <figure class="hero-visual fade-in delay-6" aria-label="Project overview visual">
       <div class="hero-visual-inner">
-        <div class="device-wireframe" aria-label="Weatherproof field logger enclosure layout">
-          <span>Field Logger Enclosure Layout</span>
+        <div class="device-wireframe" aria-label="[Device or enclosure description]">
+          <span>[Device / enclosure placeholder]</span>
         </div>
         <div class="visual-specs">
-          <div class="spec-pill"><strong>Audio Protocol</strong><span>I²S Master RX</span></div>
-          <div class="spec-pill"><strong>Sample Rate</strong><span>44.1 kHz PCM</span></div>
-          <div class="spec-pill"><strong>Storage Interface</strong><span>SPI FAT32</span></div>
-          <div class="spec-pill"><strong>Quiescent Current</strong><span>&lt; 100 µA</span></div>
+          <div class="spec-pill"><strong>[Spec label]</strong><span>[Value]</span></div>
+          <div class="spec-pill"><strong>[Spec label]</strong><span>[Value]</span></div>
+          <div class="spec-pill"><strong>[Spec label]</strong><span>[Value]</span></div>
+          <div class="spec-pill"><strong>[Spec label]</strong><span>[Value]</span></div>
         </div>
       </div>
-      <figcaption>System specification baseline for the custom hardware-software integration deployment.</figcaption>
+      <figcaption>[Caption describing what the visual shows.]</figcaption>
     </figure>
+
+    <!-- OPTION B: Full-width image (when photo is available) -->
+    <!--
+    <figure class="project-image fade-in delay-6" style="margin-top: 48px;">
+      <img src="./images/hero.jpg" alt="[Descriptive alt text]" style="aspect-ratio:16/9;" />
+      <figcaption>[Caption]</figcaption>
+    </figure>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     3. PROBLEM STATEMENT
+     3. PROBLEM STATEMENT  (REQUIRED)
+     What gap or constraint drove this? Who needed it and why?
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="problem" aria-labelledby="problem-heading">
   <div class="container">
@@ -1038,13 +1254,13 @@ a:focus-visible, button:focus-visible {
     </div>
     <div class="problem-block fade-in delay-4">
       <p>
-        <strong>Commercial ecosystem loggers enforce an aggressive operational cost threshold that limits broad-scale academic field observation.</strong>
+        <strong>[Bold hook sentence — the core tension or unmet need.]</strong>
       </p>
       <p>
-        A biology professor at Western University studying urban noise impacts on campus wildlife required an outdoor recording array. Commercial alternatives like AudioMoth ($125) or Wildlife Acoustics ($200) present steep budgetary friction and require high-frequency manual maintenance intervals. The overarching objective was to deliver an optimized, scalable solution focusing on ultra-low unattended field overhead.
+        [Expand on context. Who encountered this? What were the constraints — cost, latency, power, environment, existing tools?]
       </p>
       <p>
-        The project delivers an independent hardware-firmware framework that captures uncompressed high-fidelity stereo data, drops hardware overhead by over 60%, and establishes month-long field autonomy without battery swaps.
+        [What does this project deliver to close that gap?]
       </p>
     </div>
   </div>
@@ -1052,7 +1268,9 @@ a:focus-visible, button:focus-visible {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     4. PROJECT OVERVIEW
+     4. PROJECT OVERVIEW  (OPTIONAL)
+     Use when scope needs framing beyond the hero punchline.
+     Single paragraph OR two split cards — delete whichever you don't use.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="overview" aria-labelledby="overview-heading">
   <div class="container">
@@ -1061,23 +1279,44 @@ a:focus-visible, button:focus-visible {
       <span class="count">— scope and approach</span>
     </div>
 
+    <!-- Single paragraph variant -->
+    <p class="fade-in delay-4" style="max-width: 760px; font-size: 16px; color: var(--ink);">
+      [2–3 sentences covering what the system does end-to-end, what hardware or platform it runs on, and what the key design decisions were. This is what a recruiter reads first.]
+    </p>
+    <p class="fade-in delay-4" style="max-width: 760px;">
+      [Follow-on: expand on interesting or unexpected choices, constraints, or scope decisions.]
+    </p>
+
+    <!-- Two-card split variant (comment out the paragraphs above if using this) -->
+    <!--
     <div class="overview-grid">
       <div class="overview-card fade-in delay-4">
-        <h3>Ecology Constraints</h3>
-        <p>Field monitoring arrays mandate complete architectural stability under outdoor deployment loads. System timing relies on automated duty cycle parameters, shifting between uncompressed audio processing pipelines and structured power containment modes.</p>
+        <h3>[Context heading — e.g. "Field monitoring needed to be low-maintenance."]</h3>
+        <p>[The context or constraint that made this hard.]</p>
       </div>
       <div class="overview-card fade-in delay-5">
-        <h3>Pragmatic Architecture</h3>
-        <p>The logger records 5-minute stereo WAV files at 44.1 kHz onto physical microSD cards over a 60-minute duty loop. By leveraging hardware-level I²S DMA transfers and tuning peripheral clock speeds, the prototype preserves signal integrity under strict power budgets.</p>
+        <h3>[Solution heading — e.g. "The goal was a practical, affordable logger."]</h3>
+        <p>[What the project delivers and how.]</p>
       </div>
     </div>
+    -->
+
+    <!-- Optional image after overview -->
+    <!--
+    <div class="img-placeholder r-16-9 fade-in delay-5" style="margin-top: 28px;">
+      [Schematic / wiring diagram]
+      <span class="filename">./images/schematic.png</span>
+    </div>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     5. TECHNICAL ARCHITECTURE
+     5. TECHNICAL ARCHITECTURE  (OPTIONAL)
+     Use for hardware, firmware, and systems projects.
+     Pick ONE variant: pipeline OR grid. Delete the other entirely.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="architecture" aria-labelledby="architecture-heading">
   <div class="container">
@@ -1087,30 +1326,108 @@ a:focus-visible, button:focus-visible {
     </div>
 
     <p class="fade-in delay-3" style="max-width: 700px; margin-bottom: 24px;">
-      The hardware audio topology transitions linear acoustic signages into a structural storage matrix, decoupling high-bandwidth data acquisition from continuous storage constraints via DMA buffering loops.
+      [One or two sentences explaining what the diagram shows and what the key design choices were.]
     </p>
 
+    <!-- ── VARIANT A: PIPELINE (linear data-flow) ────────────────────
+         Best for: audio signal chains, sensor pipelines, network stacks.
+         Keep to ≤4 blocks for tablet compatibility; ≤5 on desktop only.
+         Accent the most important block with class="accent".
+         ─────────────────────────────────────────────────────────────── -->
     <figure class="fade-in delay-4">
-      <div class="arch-pipeline" role="img" aria-label="Acoustic waves encounter the ICS-43434 microphone, passing raw PCM data over I2S to the ESP32. The ESP32 handles WAV formatting and routes data via an isolated 1 MHz SPI line onto the microSD card module.">
-        <div class="arch-block">ICS-43434<small>MEMS Mic</small></div>
+      <div class="arch-pipeline" role="img" aria-label="[Describe the pipeline for screen readers]">
+        <div class="arch-block">[Input]<small>[e.g. ADC]</small></div>
         <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">ESP32 MCU<small>I²S Driver Loop</small></div>
+        <div class="arch-block accent">[Core]<small>[e.g. FPGA]</small></div>
         <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block">WAV Encoder<small>DMA Buffering</small></div>
+        <div class="arch-block">[Stage]<small>[e.g. Filter]</small></div>
         <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block">microSD Module<small>1 MHz SPI Bus</small></div>
+        <div class="arch-block">[Output]<small>[e.g. DAC]</small></div>
       </div>
       <figcaption style="text-align:center; color:var(--grey-1); font-size:13px; margin-top:10px;">
-        Linear low-noise signal processing pipeline.
+        [Caption describing the pipeline.]
       </figcaption>
     </figure>
+
+
+    <!-- ── VARIANT B: GRID (non-linear, multi-node) ──────────────────
+         Best for: distributed systems, multi-protocol comms, layers.
+         2-column, use 2 or 4 cards (even numbers look cleanest).
+         Each card gets a flat single-color SVG icon.
+         ─────────────────────────────────────────────────────────────── -->
+    <!--
+    <div class="arch-grid fade-in delay-4">
+
+      <div class="arch-card">
+        <div class="arch-card-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
+          </svg>
+        </div>
+        <h3>[Layer / Module Name]</h3>
+        <p>[What it does, why this approach was chosen.]</p>
+        <code>[key param = value]</code>
+      </div>
+
+      <div class="arch-card">
+        <div class="arch-card-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </div>
+        <h3>[Layer / Module Name]</h3>
+        <p>[What it does, key tradeoff made.]</p>
+        <code>[key param = value]</code>
+      </div>
+
+      <div class="arch-card">
+        <div class="arch-card-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <h3>[Layer / Module Name]</h3>
+        <p>[What it does, why this boundary exists.]</p>
+        <code>[key param = value]</code>
+      </div>
+
+      <div class="arch-card">
+        <div class="arch-card-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3>[Layer / Module Name]</h3>
+        <p>[What it does, scalability or future-proofing notes.]</p>
+        <code>[key param = value]</code>
+      </div>
+
+    </div>
+    -->
+
+
+    <!-- Optional: architecture image or waveform after the diagram -->
+    <!--
+    <div class="img-placeholder r-16-9 fade-in delay-5" style="margin-top: 28px;">
+      [Architecture block diagram / waveform / schematic]
+      <span class="filename">./images/architecture.png</span>
+    </div>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     6. IMPLEMENTATION DETAILS
+     6. IMPLEMENTATION DETAILS  (REQUIRED)
+     2–4 cards covering the major subsystems or firmware decisions.
+     Each: icon + title + 2–3 sentence description.
+     Cards animate in with left-bar reveal on hover.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="implementation" aria-labelledby="implementation-heading">
   <div class="container">
@@ -1123,57 +1440,72 @@ a:focus-visible, button:focus-visible {
 
       <article class="impl-card fade-in delay-4">
         <div class="impl-card-icon" aria-hidden="true">
+          <!-- CPU / embedded controller icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="4" y="4" width="16" height="16" rx="2"/>
             <rect x="9" y="9" width="6" height="6"/>
             <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
           </svg>
         </div>
-        <h3>I²S Stream Capture</h3>
-        <p>Configured in master receiver mode utilizing the internal APLL clock structure for sample rate precision. Employs 4 KB × 4 DMA buffers to maintain sample integrity during concurrent SPI write cycles.</p>
+        <h3>[Subsystem name — e.g. "I²S Capture Pipeline"]</h3>
+        <p>[What this subsystem does, how it was implemented, and one interesting constraint or choice made. 2–3 sentences.]</p>
       </article>
 
       <article class="impl-card fade-in delay-4">
         <div class="impl-card-icon" aria-hidden="true">
+          <!-- Stack / layers icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="12 2 2 7 12 12 22 7 12 2"/>
             <polyline points="2 17 12 22 22 17"/>
             <polyline points="2 12 12 17 22 12"/>
           </svg>
         </div>
-        <h3>SPI File System Storage</h3>
-        <p>Integrates a dedicated VSPI configuration executing over a constrained 1 MHz clock threshold. This configuration strictly limits high-frequency electromagnetic interference coupling into adjacent sensitive microphone paths.</p>
+        <h3>[Subsystem name — e.g. "State Machine & Scheduling"]</h3>
+        <p>[What this subsystem does, how it was implemented, and one interesting constraint or choice made. 2–3 sentences.]</p>
       </article>
 
       <article class="impl-card fade-in delay-5">
         <div class="impl-card-icon" aria-hidden="true">
+          <!-- Clock / timing icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <h3>Power-Aware Scheduling</h3>
-        <p>Implements deep-sleep control configurations dropping active power lines down between intervals. Deep sleep maps quiescent limits near &lt;100 µA, supporting month-long deployment targets.</p>
+        <h3>[Subsystem name — e.g. "Power Management"]</h3>
+        <p>[What this subsystem does, how it was implemented, and one interesting constraint or choice made. 2–3 sentences.]</p>
       </article>
 
       <article class="impl-card fade-in delay-5">
         <div class="impl-card-icon" aria-hidden="true">
+          <!-- Shield / reliability icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
         </div>
-        <h3>WAV Header Tracking</h3>
-        <p>Wraps audio tools encoding steps to stream structural linear PCM formats directly into system blocks. Final structural length values are calculated and rewritten into headers dynamically during deployment cleanup states.</p>
+        <h3>[Subsystem name — e.g. "Error Handling & Validation"]</h3>
+        <p>[What this subsystem does, how it was implemented, and one interesting constraint or choice made. 2–3 sentences.]</p>
       </article>
 
     </div>
+
+    <!-- Optional: test setup / signal capture image -->
+    <!--
+    <div class="img-placeholder r-16-9 fade-in delay-6" style="margin-top: 28px;">
+      [Test setup / signal capture / demo photo]
+      <span class="filename">./images/test-setup.png</span>
+    </div>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     7. RESULTS & METRICS
+     7. RESULTS & METRICS  (OPTIONAL)
+     Use when you have hard numbers. Even 2 cards work.
+     Angled corner accent grows on hover — a key visual, used here
+     and on the hero visual, not everywhere.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="results" aria-labelledby="results-heading">
   <div class="container">
@@ -1185,31 +1517,43 @@ a:focus-visible, button:focus-visible {
     <div class="metrics-grid">
 
       <div class="metric-card fade-in delay-4">
-        <div class="metric-value">1st Place</div>
-        <div class="metric-label">Capstone Category Win</div>
-        <p>Earned top ranking across approximately 20 validation entries in the technical design assessment.</p>
+        <div class="metric-value">[Value]</div>
+        <div class="metric-label">[Short label]</div>
+        <p>[One sentence of context for this number.]</p>
       </div>
 
       <div class="metric-card fade-in delay-4">
-        <div class="metric-value">$77.50</div>
-        <div class="metric-label">Unit Production Cost</div>
-        <p>Slashes system implementation outlays by more than 60% compared to typical commercial ecosystems.</p>
+        <div class="metric-value">[Value]</div>
+        <div class="metric-label">[Short label]</div>
+        <p>[One sentence of context for this number.]</p>
       </div>
 
       <div class="metric-card fade-in delay-5">
-        <div class="metric-value">4+ Weeks</div>
-        <div class="metric-label">Unattended Autonomy</div>
-        <p>Eliminates rapid manual intervention cycles by employing targeted power containment scheduling algorithms.</p>
+        <div class="metric-value">[Value]</div>
+        <div class="metric-label">[Short label]</div>
+        <p>[One sentence of context for this number.]</p>
       </div>
 
+      <!-- Add or remove metric-card blocks freely — even numbers also look clean -->
+
     </div>
+
+    <!-- Optional: validation / measurement image -->
+    <!--
+    <div class="img-placeholder r-16-9 fade-in delay-5" style="margin-top: 28px;">
+      [Measurement / validation / spectral analysis]
+      <span class="filename">./images/validation.png</span>
+    </div>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     8. DESIGN CHALLENGES
+     8. DESIGN CHALLENGES  (REQUIRED)
+     2–4 cards. Each is a real tradeoff or hard constraint.
+     Left-bar reveal on hover — amber secondary accent.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="challenges" aria-labelledby="challenges-heading">
   <div class="container">
@@ -1222,26 +1566,26 @@ a:focus-visible, button:focus-visible {
 
       <div class="challenge-card fade-in delay-4">
         <div class="challenge-index">Challenge 01</div>
-        <h3>Electrical Noise in Parallel Buses</h3>
-        <p>Concurrent high-speed operations across standard SPI connections generated significant tracking noise and audio click artifacts in adjacent I²S collection paths. To fix this without introducing complex shielding costs, I reduced the storage bus speed to a strict 1 MHz threshold. Signal correctness was verified by analyzing the frequency domain via Audacity FFT captures to guarantee reference tone preservation.</p>
+        <h3>[Short title — name the tension, not the resolution]</h3>
+        <p>[Describe the constraint, why it was hard, what approaches were tried, and the resolution or the remaining tradeoff left open.]</p>
       </div>
 
       <div class="challenge-card fade-in delay-5">
         <div class="challenge-index">Challenge 02</div>
-        <h3>Firmware Base Selection Under Pressure</h3>
-        <p>Initial testing used multi-feature GitHub drivers that introduced massive dependency blockages and failed compile tasks near integration deadlines. I pivoted to a highly localized, minimal baseline framework to regain traction. Features were introduced iteratively—advancing from standard raw serial outputs directly to structured sector writes—preserving validation timelines.</p>
+        <h3>[Short title]</h3>
+        <p>[Same structure: constraint → difficulty → approach → outcome.]</p>
       </div>
 
       <div class="challenge-card fade-in delay-4">
         <div class="challenge-index">Challenge 03</div>
-        <h3>Signal Validation Absent Live Hardware</h3>
-        <p>Physical microphone modules arrived very late in the hardware sprint, threatening code stability verification. I decoupled dependencies by transforming an extra ESP32 node into a target dummy data generator that emitted simulated 44.1 kHz sine signals. Routing this data into active inputs exposed runtime bugs in the WAV encoder weeks before assembly.</p>
+        <h3>[Short title]</h3>
+        <p>[Same structure.]</p>
       </div>
 
       <div class="challenge-card fade-in delay-5">
         <div class="challenge-index">Challenge 04</div>
-        <h3>Duty Cycle Real-Time Scaling</h3>
-        <p>Migrating quick 60-second prototype loop timers to production 60-minute windows threatened to destabilize standard scheduling loops. I abstracted all loop limits into compile-time parameter headers. This allowed rapid testing in prototype blocks while ensuring state machines retained complete logic structure when production values were compiled.</p>
+        <h3>[Short title]</h3>
+        <p>[Same structure.]</p>
       </div>
 
     </div>
@@ -1250,7 +1594,9 @@ a:focus-visible, button:focus-visible {
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     9. SKILLS & TECHNOLOGIES
+     9. SKILLS & TECHNOLOGIES  (REQUIRED)
+     featured (gold filled) = primary skills demonstrated.
+     default  (outline)     = supporting tools, libraries, frameworks.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="skills" aria-labelledby="skills-heading">
   <div class="container">
@@ -1259,21 +1605,24 @@ a:focus-visible, button:focus-visible {
       <span class="count">— skills applied</span>
     </div>
     <div class="skills-grid fade-in delay-5">
-      <span class="skill featured">I²S Protocol Implementation</span>
-      <span class="skill featured">SPI File System Management</span>
-      <span class="skill featured">Embedded C++</span>
-      <span class="skill">Audio Signal Analysis (FFT)</span>
-      <span class="skill">Hardware Integration</span>
-      <span class="skill">Power Management</span>
-      <span class="skill">System Verification & Testing</span>
-      <span class="skill">PlatformIO</span>
+      <span class="skill featured">[Primary skill]</span>
+      <span class="skill featured">[Primary skill]</span>
+      <span class="skill featured">[Primary skill]</span>
+      <span class="skill">[Supporting skill]</span>
+      <span class="skill">[Supporting skill]</span>
+      <span class="skill">[Supporting skill]</span>
+      <span class="skill">[Tool / framework]</span>
+      <span class="skill">[Tool / framework]</span>
     </div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     10. BUILD & REPOSITORY
+     10. BUILD & REPOSITORY  (OPTIONAL)
+     Use when the repo is public and someone could actually build it.
+     Combine: setup commands + wiring table + code snippet + file tree.
+     Include only the sub-components that are relevant.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="build" aria-labelledby="build-heading">
   <div class="container">
@@ -1284,55 +1633,66 @@ a:focus-visible, button:focus-visible {
 
     <div class="build-grid">
 
+      <!-- Setup commands -->
       <div class="build-card fade-in delay-4">
         <h3>Build locally</h3>
-        <p>Requires PlatformIO core tools inside a Linux or compatible embedded toolchain wrapper framework.</p>
+        <p>[Short description of toolchain and any prerequisites.]</p>
         <div class="code-block">
-<code><span class="hl"># Clone and compile build target</span>
-git clone https://github.com/NEhnes/mic_sd_logger
-cd mic_sd_logger/src/final_submission
-pio run -t upload
-pio device monitor -b 115200</h2></code>
+<code><span class="hl"># Clone and build</span>
+git clone https://github.com/NEhnes/[REPO]
+cd [REPO]
+[build command]
+[flash / run command]</code>
         </div>
       </div>
 
+      <!-- Config & wiring table -->
       <div class="build-card fade-in delay-5">
         <h3>Key configuration</h3>
-        <p>Pinouts mapping low-interference hardware routing loops between the processing core and target peripherals.</p>
-        
+        <p>[The most important parameters or pin connections someone would need.]</p>
+        <!-- Wiring table — remove if not applicable -->
         <table class="wire-table">
           <thead>
             <tr><th>Signal</th><th>Pin / GPIO</th><th>Peripheral</th></tr>
           </thead>
           <tbody>
-            <tr><td>SPI SCK</td><td><code>GPIO 18</code></td><td>microSD Card Adapter</td></tr>
-            <tr><td>SPI MISO</td><td><code>GPIO 19</code></td><td>microSD Card Adapter</td></tr>
-            <tr><td>SPI MOSI</td><td><code>GPIO 23</code></td><td>microSD Card Adapter</td></tr>
-            <tr><td>SPI CS</td><td><code>GPIO 5</code></td><td>microSD Card Adapter</td></tr>
-            <tr><td>I²S DATA</td><td><code>GPIO 22</code></td><td>ICS-43434 MEMS Mic</td></tr>
+            <tr><td>[Signal]</td><td><code>GPIO [N]</code></td><td>[Device]</td></tr>
+            <tr><td>[Signal]</td><td><code>GPIO [N]</code></td><td>[Device]</td></tr>
+            <tr><td>[Signal]</td><td><code>GPIO [N]</code></td><td>[Device]</td></tr>
           </tbody>
         </table>
       </div>
 
     </div>
 
+    <!-- Notable code snippet — OPTIONAL -->
+    <!--
+    <div class="code-block fade-in delay-5" style="margin-top: 20px;">
+<pre><span class="hl">// [What this snippet demonstrates]</span>
+[code here]</pre>
+    </div>
+    -->
+
+    <!-- Repository file tree — OPTIONAL -->
+    <!--
     <pre class="file-tree fade-in delay-5">
 <span class="dir">.</span>
-├── <span class="dir">src/final_submission/</span>  <span class="note">— Production logger source code</span>
-│   ├── platformio.ini
-│   ├── <span class="dir">include/</span>          <span class="note">— Driver wrappers for storage and encoding</span>
-│   │   ├── sd_card.h
-│   │   └── wav_writer.h
-│   └── <span class="dir">src/</span>              <span class="note">— Execution blocks and peripheral init</span>
-│       └── main.cpp
-└── <span class="dir">docs/</span>                 <span class="note">— Schematics, program flows, and design notes</span></pre>
+├── <span class="dir">src/</span>          <span class="note">— [source files]</span>
+│   ├── main.cpp
+│   └── [module].h
+├── <span class="dir">docs/</span>         <span class="note">— [design notes, datasheets]</span>
+└── README.md</pre>
+    -->
 
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     11. STATUS & ROADMAP
+     11. STATUS & ROADMAP  (OPTIONAL)
+     Use for in-progress or actively evolving projects.
+     Two-column: what works + known limitations.
+     Followed by a prose next-steps block.
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="roadmap" aria-labelledby="roadmap-heading">
   <div class="container">
@@ -1348,15 +1708,15 @@ pio device monitor -b 115200</h2></code>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--p-primary);font-weight:700;flex-shrink:0;">✓</span>
-            Low-frequency 1 MHz SPI execution loop suppressing noise spikes.
+            [Completed capability]
           </li>
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--p-primary);font-weight:700;flex-shrink:0;">✓</span>
-            I²S master configuration running uncorrupted DMA structures.
+            [Completed capability]
           </li>
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--p-primary);font-weight:700;flex-shrink:0;">✓</span>
-            Automated session directory generation within standard FAT32 filesystems.
+            [Completed capability]
           </li>
         </ul>
       </div>
@@ -1366,15 +1726,15 @@ pio device monitor -b 115200</h2></code>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--grey-2);font-weight:700;flex-shrink:0;">–</span>
-            Mechanical enclosure mounting arms fail drop tests above 45 inches.
+            [Known limitation or in-progress item]
           </li>
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--grey-2);font-weight:700;flex-shrink:0;">–</span>
-            Lacks an internal 40 dB adaptive software noise gate filter.
+            [Known limitation or in-progress item]
           </li>
           <li style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink-soft);">
             <span style="color:var(--grey-2);font-weight:700;flex-shrink:0;">–</span>
-            Full environmental stress validation at extreme -20°C points is pending.
+            [Known limitation or in-progress item]
           </li>
         </ul>
       </div>
@@ -1382,7 +1742,7 @@ pio device monitor -b 115200</h2></code>
     </div>
 
     <div class="problem-block fade-in delay-5" style="margin-top: 20px;">
-      <strong>Next steps:</strong> Redesign structural mechanical mounting clips for robust field deployment, deploy adaptive software noise gates inside the firmware pipeline, and introduce over-the-air file tracking telemetry blocks.
+      <strong>Next steps:</strong> [Specific next milestones — PCB spins, validation experiments, integrations, scope changes. Be concrete.]
     </div>
 
   </div>
@@ -1390,18 +1750,37 @@ pio device monitor -b 115200</h2></code>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     12. FOOTER CTA
+     12. TEAM & CREDITS  (OPTIONAL)
+     Use when collaboration or external inspiration is worth naming.
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="team" aria-labelledby="team-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-4">
+      <h2 id="team-heading">Team & Credits</h2>
+      <span class="count">— collaborators and acknowledgements</span>
+    </div>
+    <div class="problem-block fade-in delay-5">
+      <strong>[Team description — e.g. "Six-person interdisciplinary team."]</strong> [Describe subteam roles, your specific contribution, and any libraries, tools, or people worth crediting.]
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     13. FOOTER CTA  (REQUIRED)
+     Primary button: GitHub.
+     Secondary button: back-to-home (only other instance besides header logo).
      ═══════════════════════════════════════════════════════════════════ -->
 <section class="cta-section" id="contact" aria-labelledby="contact-heading">
   <div class="container">
     <h2 id="contact-heading" class="cta-title fade-in delay-5">
-      Want to dig into the waveforms?
+      [Short punchy CTA — e.g. "Want to dig into the waveforms?"]
     </h2>
     <p class="cta-sub fade-in delay-5">
-      Explore the comprehensive open-source codebase, circuit schematics, and signal analysis documents.
+      [One sentence summing up what the repo or portfolio offers someone reading this.]
     </p>
     <div class="cta-buttons fade-in delay-6">
-      <a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener" class="btn btn-primary">
+      <a href="https://github.com/NEhnes/[REPO]" target="_blank" rel="noopener" class="btn btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
         </svg>
@@ -1422,16 +1801,17 @@ pio device monitor -b 115200</h2></code>
 
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     13. HTML FOOTER
+     14. HTML FOOTER  (REQUIRED)
+     Minimal: project name · one-line descriptor · repo link.
      ═══════════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
     <p>
-      Wildlife Soundscape Logger
+      [Project Name]
       &nbsp;·&nbsp;
-      ESP32 embedded systems project
+      [One-line descriptor — e.g. "ESP32 embedded systems project"]
       &nbsp;·&nbsp;
-      <a href="https://github.com/NEhnes/mic_sd_logger" target="_blank" rel="noopener">Repository</a>
+      <a href="https://github.com/NEhnes/[REPO]" target="_blank" rel="noopener">Repository</a>
     </p>
     <p style="margin-top: 6px;">
       <a href="https://github.com/NEhnes" target="_blank" rel="noopener">GitHub</a>

@@ -6,70 +6,80 @@
 <title>WEBots ESP32 Robot Communications Architecture — Nathan Ehnes</title>
 <meta name="description" content="ESP32-based CAN 2.0B and micro-ROS communication layers for the WEBots humanoid robot platform." />
 <style>
-  /* ═══════════════════════════════════════════════════════════
-     MODERN DOLCH DARK THEME — GOLD VARIANT
-  ═══════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════════════════
+     MODERN DOLCH DARK — GOLD VARIANT[cite: 3]
+     ───────────────────────────────────────────────────────────────────────
+     Primary accent:   #d98f00  gold  — buttons, active tags, headings[cite: 3]
+     Secondary accent: #c86428  amber — left-bar card reveals, borders[cite: 3]
+     ═══════════════════════════════════════════════════════════════════ */
   :root {
-    --p-primary:      #d98f00;
-    --p-primary-alt:   #c28000;
-    --p-primary-soft:  #6b4600;
-    --p-secondary:     #8a8a8a;
-    --p-secondary-lt:  #6a6a6a;
-    --p-bg:            #2a2a2a;
-    --p-bg-alt:        #333333;
-    --p-surface:       #383838;
-    --p-ink:           #f0f0f0;
-    --p-ink-soft:      #c8c8c8;
-    --p-border:        rgba(240,240,240,0.07);
-    --p-border-pill:   rgba(240,240,240,0.09);
-    --p-tag-bg:        rgba(217, 143, 0, 0.12);
-    --p-tag-color:     #eb9b00;
-    --p-badge-bg:      rgba(238, 201, 69, 0.15);
-    --p-badge-color:   #eec945;
-    --p-icon-bg:       rgba(217, 143, 0, 0.13);
-    --p-icon-color:    #d98f00;
-    --p-card-bg:       #333333;
-    --p-btn-primary-bg:    #d98f00;
-    --p-btn-primary-fg:    #1a1a1a;
-    --p-btn-secondary-bg:  #383838;
-    --p-btn-secondary-fg:  #f0f0f0;
-    --p-btn-secondary-border: rgba(240,240,240,0.18);
-    --p-punchline:     #d98f00;
-    --p-left-bar:       #ff5068;
-    --p-rotating-bg:    #f0f0f0;
-    --p-rotating-fg:    #2a2a2a;
-    --p-nav-hover:      #d98f00;
-    --p-footer-border:   rgba(240,240,240,0.07);
-    --p-gold:           #eec945;
+    /* PRIMARY GOLD ACCENT[cite: 3] */
+    --p-primary:          #d98f00;
+    --p-primary-alt:      #c28000;
+    --p-primary-soft:     #6b4600;
 
-    --green-1:    var(--p-primary-alt);
-    --green-2:    var(--p-primary);
-    --green-soft: var(--p-primary-soft);
-    --grey-1:     var(--p-secondary);
-    --grey-2:     var(--p-secondary-lt);
-    --beige-1:    var(--p-surface);
-    --beige-2:    var(--p-bg);
-    --beige-3:    var(--p-bg-alt);
-    --ink:        var(--p-ink);
-    --ink-soft:   var(--p-ink-soft);
-    --shadow-sm:  0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md:  0 4px 12px rgba(0,0,0,0.1),  0 2px 4px rgba(0,0,0,0.05);
-    --shadow-lg:  0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
-    --radius-sm:  10px;
-    --radius-md:  14px;
-    --radius-lg:  18px;
-    --transition:  0.35s cubic-bezier(0.4,0,0.2,1);
+    /* SECONDARY ACCENT[cite: 3] */
+    --p-secondary-accent: #c86428;
+
+    /* NEUTRALS[cite: 3] */
+    --p-secondary:        #8a8a8a;
+    --p-secondary-lt:     #6a6a6a;
+
+    /* BACKGROUNDS[cite: 3] */
+    --p-bg:               #2a2a2a;
+    --p-bg-alt:           #333333;
+    --p-surface:          #383838;
+
+    /* TEXT[cite: 3] */
+    --p-ink:              #f0f0f0;
+    --p-ink-soft:         #c8c8c8;
+
+    /* BORDERS[cite: 3] */
+    --p-border:           rgba(240,240,240,0.07);
+    --p-border-pill:      rgba(240,240,240,0.09);
+
+    /* COMPONENT TOKENS[cite: 3] */
+    --p-tag-bg:           rgba(217,143,0,0.12);
+    --p-tag-color:        #eb9b00;
+    --p-badge-bg:         rgba(217,143,0,0.15);
+    --p-badge-color:      #ffb700;
+    --p-icon-bg:          rgba(217,143,0,0.13);
+    --p-icon-color:       #d98f00;
+    --p-card-bg:          #333333;
+    --p-gold:             #eec945;
+
+    /* BUTTONS[cite: 3] */
+    --p-btn-primary-bg:        #d98f00;
+    --p-btn-primary-fg:        #1a1a1a;
+    --p-btn-secondary-bg:      #383838;
+    --p-btn-secondary-fg:      #f0f0f0;
+    --p-btn-secondary-border:  rgba(240,240,240,0.18);
+
+    /* TYPOGRAPHIC ACCENTS[cite: 3] */
+    --p-punchline:        #d98f00;
+    --p-nav-hover:        #d98f00;
+
+    /* ALIASES[cite: 3] */
+    --green-1:  var(--p-primary-alt);
+    --green-2:  var(--p-primary);
+    --grey-1:   var(--p-secondary);
+    --grey-2:   var(--p-secondary-lt);
+    --ink:      var(--p-ink);
+    --ink-soft: var(--p-ink-soft);
+
+    /* SHADOWS[cite: 3] */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
+
+    /* SHAPE[cite: 3] */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
   }
 
-  body, .skill, .project-card, .currently-card,
-  .leadership-block, .btn, header, footer, .rotating-tag,
-  .currently-icon, .project-badge, .project-tag, nav, .logo,
-  .logo-mark, .hero-punchline, h1, h2, h3 {
-    transition-property: background-color, color, border-color, box-shadow;
-    transition-duration: 0.4s;
-    transition-timing-function: ease;
-  }
-
+  /* ─── RESET ──────────────────────────────────────────────────────── */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
 
@@ -78,11 +88,20 @@
     font-size: 16px;
     line-height: 1.6;
     color: var(--ink);
-    background: var(--beige-2);
+    background: var(--p-bg);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
+  body, .skill, .impl-card, .challenge-card, .metric-card, .arch-card,
+  .overview-card, .build-card, .btn, header, footer, nav,
+  .logo, .logo-mark, h1, h2, h3 {
+    transition-property: background-color, color, border-color, box-shadow;
+    transition-duration: 0.4s;
+    transition-timing-function: ease;
+  }
+
+  /* ─── LAYOUT ─────────────────────────────────────────────────────── */
   .container {
     max-width: 980px;
     margin: 0 auto;
@@ -91,20 +110,39 @@
     z-index: 1;
   }
 
+  /* ─── ANIMATION ──────────────────────────────────────────────────── */
   .fade-in { opacity: 0; transform: translateY(16px); animation: fadeUp 0.6s ease-out forwards; }
   @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-  .delay-1 { animation-delay: 0.1s; }
+  .delay-1 { animation-delay: 0.10s; }
   .delay-2 { animation-delay: 0.25s; }
-  .delay-3 { animation-delay: 0.4s; }
+  .delay-3 { animation-delay: 0.40s; }
   .delay-4 { animation-delay: 0.55s; }
-  .delay-5 { animation-delay: 0.7s; }
+  .delay-5 { animation-delay: 0.70s; }
   .delay-6 { animation-delay: 0.85s; }
   @media (prefers-reduced-motion: reduce) {
     .fade-in { opacity: 1; transform: none; animation: none; }
   }
 
-  header { padding: 28px 0 12px; }
+  /* ─── TYPOGRAPHY ─────────────────────────────────────────────────── */
+  h2 { font-size: 1.25rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  p { color: var(--ink-soft); line-height: 1.7; }
 
+  :not(pre) > code {
+    background: var(--p-surface);
+    color: var(--p-tag-color);
+    font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ─── SECTION CHROME ─────────────────────────────────────────────── */
+  section { padding: 54px 0; }
+  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
+  .section-header .count { color: var(--grey-2); font-size: 0.9rem; }
+
+  /* ─── HEADER & NAV ───────────────────────────────────────────────── */
+  header { padding: 28px 0 12px; }
   nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
 
   .logo {
@@ -112,7 +150,6 @@
     font-weight: 600; color: var(--ink); text-decoration: none;
     font-size: 15px; letter-spacing: -0.01em;
   }
-
   .logo-mark {
     width: 32px; height: 32px; border-radius: 8px;
     background: linear-gradient(135deg, var(--green-1), var(--green-2));
@@ -125,288 +162,201 @@
   .nav-links a { color: var(--grey-1); text-decoration: none; font-size: 14px; font-weight: 500; transition: color var(--transition); }
   .nav-links a:hover { color: var(--p-nav-hover); }
 
+  /* ─── BUTTONS ────────────────────────────────────────────────────── */
   .btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 600; text-decoration: none;
-    cursor: pointer; border: 1px solid transparent; transition: all var(--transition);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all var(--transition);
   }
   .btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
   .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .btn-secondary { background: var(--p-btn-secondary-bg); color: var(--p-btn-secondary-fg); border-color: var(--p-btn-secondary-border); }
   .btn-secondary:hover { background: var(--p-bg-alt); border-color: var(--p-primary); color: var(--p-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 
-  /* ─── HERO ─────────────────────────────────────────────────── */
-  .hero {
-    padding: 80px 0 60px;
-    text-align: left;
-    background: var(--p-bg);
+  /* ─── HERO ───────────────────────────────────────────────────────── */
+  .hero { padding: 96px 0 72px; background: var(--p-bg); position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(217,143,0,0.20) 1px, transparent 1px);
+    background-size: 24px 24px; opacity: 0.55; pointer-events: none; z-index: 0;
   }
-
-  .hero-breadcrumb {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: var(--grey-1); font-size: 13px; font-weight: 500;
-    text-decoration: none; margin-bottom: 28px;
-    transition: color var(--transition);
+  .hero::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 28% 55%, transparent 28%, var(--p-bg) 70%);
+    pointer-events: none; z-index: 0;
   }
-  .hero-breadcrumb:hover { color: var(--p-primary); }
-  .hero-breadcrumb svg { width: 14px; height: 14px; }
+  .hero-inner { position: relative; z-index: 1; }
 
   .hero-eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--p-badge-bg); color: var(--p-badge-color);
-    font-size: 11px; font-weight: 700; padding: 5px 12px;
-    border-radius: 999px; text-transform: uppercase; letter-spacing: 0.06em;
-    margin-bottom: 20px;
+    display: inline-flex; align-items: center; gap: 8px; background: var(--p-badge-bg);
+    color: var(--p-badge-color); font-size: 11px; font-weight: 700; padding: 5px 13px;
+    border-radius: 999px; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 20px;
+  }
+  .hero-eyebrow::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--p-primary); box-shadow: 0 0 8px var(--p-primary); flex-shrink: 0;
   }
 
-  .hero-title {
-    font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1;
-    font-weight: 550; letter-spacing: -0.03em;
-    color: var(--ink); margin-bottom: 16px;
-  }
-
-  .hero-punchline {
-    font-size: clamp(1.1rem, 2.5vw, 1.4rem); font-weight: 350;
-    color: var(--p-punchline); letter-spacing: -0.02em; margin-bottom: 20px;
-  }
-
-  .hero-desc {
-    font-size: 1rem; color: var(--grey-1); line-height: 1.65;
-    max-width: 680px; margin-bottom: 32px;
-  }
-
-  .hero-meta {
-    display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 36px;
-  }
-  .meta-item {
-    display: inline-flex; align-items: center; gap: 8px;
-    color: var(--ink-soft); font-size: 14px; font-weight: 500;
-  }
+  .hero-title { font-size: clamp(2.3rem, 5.5vw, 4rem); line-height: 1.05; font-weight: 600; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 18px; }
+  .hero-punchline { font-size: clamp(1.1rem, 2.4vw, 1.4rem); font-weight: 350; color: var(--p-punchline); letter-spacing: -0.02em; margin-bottom: 20px; max-width: 720px; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 34px; }
+  .meta-item { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
   .meta-icon { width: 16px; height: 16px; color: var(--green-2); flex-shrink: 0; }
-
   .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-  /* ─── SECTIONS ──────────────────────────────────────────────── */
-  section { padding: 52px 0; }
-  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
-  h2 { font-size: 1.25rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
-  .section-header .count { color: var(--grey-2); font-size: 0.9rem; }
-
-  /* ─── PROBLEM ──────────────────────────────────────────────── */
-  .problem-block {
-    background: var(--p-bg-alt);
-    border-left: 3px solid var(--p-primary);
-    border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    padding: 28px 32px;
-    color: var(--ink-soft); font-size: 15px; line-height: 1.7;
+  /* ─── HERO VISUAL (ANGLED ACCENT) ────────────────────────────────── */
+  .hero-visual {
+    margin-top: 52px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--p-border);
+    background: radial-gradient(circle at 18% 22%, rgba(217,143,0,0.22), transparent 28%), radial-gradient(circle at 78% 18%, rgba(200,100,40,0.10), transparent 24%), linear-gradient(135deg, rgba(240,240,240,0.06), rgba(240,240,240,0.02));
+    box-shadow: var(--shadow-lg); position: relative;
   }
-  .problem-block strong { color: var(--ink); }
+  .hero-visual::before {
+    content: ""; position: absolute; top: -1px; right: -1px; width: 28px; height: 28px;
+    border-top: 2px solid var(--p-primary); border-right: 2px solid var(--p-primary);
+    border-top-right-radius: var(--radius-lg); opacity: 0.5; z-index: 10; pointer-events: none; transition: all var(--transition);
+  }
+  .hero-visual:hover::before { width: 44px; height: 44px; opacity: 1; }
+  .hero-visual-inner { min-height: 260px; padding: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; position: relative; }
+  .hero-visual-inner::before {
+    content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(240,240,240,0.033) 1px, transparent 1px), linear-gradient(90deg, rgba(240,240,240,0.033) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none;
+  }
+
+  .device-wireframe {
+    position: relative; z-index: 1; border-radius: 20px; min-height: 180px;
+    background: linear-gradient(145deg, rgba(56,56,56,0.92), rgba(26,26,26,0.92));
+    border: 1px solid rgba(240,240,240,0.10); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), var(--shadow-md);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--grey-2); font-size: 13px; font-weight: 500; text-align: center;
+  }
+  .device-wireframe::before { content: ""; position: absolute; inset: 16px; border: 1px dashed rgba(217,143,0,0.35); border-radius: 13px; pointer-events: none; }
+  .device-wireframe span { position: relative; z-index: 1; padding: 0 24px; color: var(--ink-soft); }
+
+  .visual-specs { position: relative; z-index: 1; display: grid; gap: 12px; }
+  .spec-pill { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; border-radius: var(--radius-md); background: rgba(240,240,240,0.04); border: 1px solid var(--p-border); }
+  .spec-pill strong { color: var(--ink); font-size: 14px; }
+  .spec-pill span { color: var(--p-badge-color); font-size: 13px; font-weight: 700; text-align: right; }
+  .hero-visual > figcaption { color: var(--grey-1); font-size: 13px; text-align: center; padding: 10px 20px 16px; }
+
+  /* ─── REAL IMAGE FRAME ───────────────────────────────────────────── */
+  .project-image { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--p-border); background: var(--p-surface); margin-top: 24px; }
+  .project-image img { display: block; width: 100%; object-fit: cover; }
+  .project-image figcaption { color: var(--grey-1); font-size: 13px; text-align: center; padding: 10px 16px 14px; }
+
+  /* ─── PROBLEM STATEMENT BLOCK ────────────────────────────────────── */
+  .problem-block { background: var(--p-bg-alt); border-left: 3px solid var(--p-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 28px 32px; color: var(--ink-soft); font-size: 15px; line-height: 1.7; }
   .problem-block p + p { margin-top: 12px; }
+  .problem-block strong { color: var(--ink); }
 
-  /* ─── ARCHITECTURE ─────────────────────────────────────────── */
-  .arch-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  @media (min-width: 640px) {
-    .arch-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+  /* ─── ARCHITECTURE — GRID VARIANT ────────────────────────────────── */
+  .arch-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 640px) { .arch-grid { grid-template-columns: repeat(2, 1fr); } }
 
-  .arch-card {
-    background: var(--p-card-bg);
-    border: 1px solid var(--p-border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    transition: all var(--transition);
-  }
+  .arch-card { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 22px; transition: all var(--transition); }
   .arch-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--p-primary-soft); }
+  .arch-card-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--p-icon-bg); color: var(--p-icon-color); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 16px; }
+  .arch-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .arch-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
+  .arch-card .code-inline-container { margin-top: 10px; }
 
-  .arch-card-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: var(--p-icon-bg); color: var(--p-icon-color);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; margin-bottom: 14px;
-  }
+  /* ─── IMPLEMENTATION CARDS (LEFT-BAR REVEAL) ─────────────────────── */
+  .impl-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 640px) { .impl-grid { grid-template-columns: repeat(2, 1fr); } }
 
-  .arch-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
-  .arch-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin-bottom: 14px; }
-  .arch-card code {
-    display: inline-block;
-    background: var(--p-surface);
-    color: var(--p-tag-color);
-    font-family: "SF Mono", "Fira Code", "Fira Mono", monospace;
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 5px;
-  }
+  .impl-card { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 22px; position: relative; overflow: hidden; transition: all var(--transition); }
+  .impl-card::after { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--p-secondary-accent); transform: scaleY(0); transform-origin: top; transition: transform var(--transition); }
+  .impl-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .impl-card:hover::after { transform: scaleY(1); }
+  .impl-card-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--p-icon-bg); color: var(--p-icon-color); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 15px; }
+  .impl-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .impl-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
 
-  /* ─── PROJECT IMAGE ─────────────────────────────────────────── */
-  .project-image {
-    margin: 0 0 8px;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    border: 1px solid var(--p-border);
-    background: var(--p-surface);
-    position: relative;
-  }
-  .project-image::before {
-    content: "";
-    display: block;
-    padding-top: 56.25%; /* 16:9 */
-  }
-  .project-image img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .project-image figcaption {
-    text-align: center;
-    color: var(--grey-1);
-    font-size: 13px;
-    margin-top: 10px;
-    padding: 0 0 4px;
-  }
+  /* ─── METRICS / RESULTS GRID (ANGLED CORNER) ─────────────────────── */
+  .metrics-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 600px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .metrics-grid { grid-template-columns: repeat(3, 1fr); } }
 
-  /* ─── CODE BLOCK ────────────────────────────────────────────── */
-  .code-block {
-    background: var(--p-surface);
-    border: 1px solid var(--p-border);
-    border-radius: var(--radius-md);
-    padding: 20px 24px;
-    overflow-x: auto;
-    margin: 16px 0;
-  }
-  .code-block pre {
-    font-family: "SF Mono", "Fira Code", "Fira Mono", monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    white-space: pre;
-  }
-  .code-block .hl { color: var(--p-tag-color); }
+  .metric-card { background: var(--p-surface); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 22px; position: relative; overflow: hidden; transition: all var(--transition); }
+  .metric-card::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(217,143,0,0.12), transparent 40%); pointer-events: none; }
+  .metric-card::after { content: ""; position: absolute; top: -1px; right: -1px; width: 20px; height: 20px; border-top: 2px solid var(--p-primary); border-right: 2px solid var(--p-primary); border-top-right-radius: var(--radius-md); opacity: 0.40; transition: all var(--transition); }
+  .metric-card:hover::after { width: 36px; height: 36px; opacity: 1; }
+  .metric-card > * { position: relative; z-index: 1; }
+  .metric-value { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; color: var(--p-badge-color); letter-spacing: -0.04em; line-height: 1; margin-bottom: 8px; }
+  .metric-label { color: var(--ink); font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .metric-card > p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
 
-  /* ─── RESULTS ───────────────────────────────────────────────── */
-  .results-list {
-    list-style: none;
-    display: flex; flex-direction: column; gap: 14px;
-  }
-  .results-list li {
-    display: flex; align-items: flex-start; gap: 14px;
-    font-size: 15px; color: var(--ink-soft); line-height: 1.55;
-  }
-  .results-list li::before {
-    content: "★";
-    color: var(--p-gold);
-    font-size: 12px;
-    margin-top: 4px;
-    flex-shrink: 0;
-  }
-  .results-list li strong { color: var(--ink); }
+  /* ─── DESIGN CHALLENGE CARDS (LEFT-BAR REVEAL) ───────────────────── */
+  .challenge-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 720px) { .challenge-grid { grid-template-columns: repeat(2, 1fr); } }
 
-  /* ─── CHALLENGES ───────────────────────────────────────────── */
-  .challenges-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  @media (min-width: 640px) {
-    .challenges-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+  .challenge-card { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 22px; position: relative; overflow: hidden; transition: all var(--transition); }
+  .challenge-card::after { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--p-secondary-accent); transform: scaleY(0); transform-origin: top; transition: transform var(--transition); }
+  .challenge-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .challenge-card:hover::after { transform: scaleY(1); }
+  .challenge-index { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--p-badge-color); margin-bottom: 8px; }
+  .challenge-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .challenge-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
 
-  .challenge-card {
-    background: var(--p-bg-alt);
-    border-radius: var(--radius-md);
-    padding: 20px 22px;
-    border-left: 3px solid var(--p-left-bar);
-  }
-  .challenge-card h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
-  .challenge-card p { font-size: 13px; color: var(--grey-1); line-height: 1.6; }
-
-  /* ─── SKILLS ───────────────────────────────────────────────── */
+  /* ─── SKILLS / TECHNOLOGY TAGS ───────────────────────────────────── */
   .skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-  .skill {
-    background: var(--p-tag-bg); color: var(--p-tag-color);
-    padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
-    border: 1px solid var(--p-border-pill); cursor: default; transition: all var(--transition);
-  }
+  .skill { background: var(--p-tag-bg); color: var(--p-tag-color); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500; border: 1px solid var(--p-border-pill); cursor: default; transition: all var(--transition); }
   .skill:hover { background: var(--p-primary); color: var(--p-btn-primary-fg); transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--p-primary); }
   .skill.featured { background: var(--p-primary); color: var(--p-btn-primary-fg); border-color: var(--p-primary); }
   .skill.featured::before { content: "★ "; }
 
-  /* ─── WIRING TABLE ──────────────────────────────────────────── */
-  .wire-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    margin: 8px 0 20px;
-  }
-  .wire-table th {
-    text-align: left;
-    color: var(--grey-2);
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--p-border);
-  }
-  .wire-table td {
-    padding: 9px 12px;
-    color: var(--ink-soft);
-    border-bottom: 1px solid var(--p-border);
-  }
+  /* ─── BUILD & REPOSITORY ─────────────────────────────────────────── */
+  .build-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 720px) { .build-grid { grid-template-columns: 1fr 1fr; } }
+
+  .build-card { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 24px; }
+  .build-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .build-card > p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin-bottom: 14px; }
+
+  .code-block { background: #1e1e1e; border: 1px solid var(--p-border); border-radius: var(--radius-sm); padding: 16px 18px; overflow-x: auto; margin-top: 14px; }
+  .code-block pre { font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); white-space: pre; }
+  .code-block .hl { color: var(--p-tag-color); }
+
+  pre.file-tree { background: var(--p-bg-alt); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 20px 24px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; line-height: 1.7; color: var(--ink-soft); overflow-x: auto; white-space: pre; margin-top: 20px; }
+  pre.file-tree .dir { color: var(--p-tag-color); }
+
+  .wire-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 4px; }
+  .wire-table th { text-align: left; color: var(--grey-2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 12px; border-bottom: 1px solid var(--p-border); }
+  .wire-table td { padding: 8px 12px; color: var(--ink-soft); border-bottom: 1px solid var(--p-border); }
   .wire-table tr:last-child td { border-bottom: none; }
-  .wire-table code {
-    background: var(--p-surface);
-    color: var(--p-tag-color);
-    font-family: "SF Mono", "Fira Code", monospace;
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
 
-  /* ─── STATUS ────────────────────────────────────────────────── */
-  .status-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  @media (max-width: 600px) {
-    .status-grid { grid-template-columns: 1fr; }
-  }
+  /* ─── STATUS & ROADMAP ───────────────────────────────────────────── */
+  .status-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+  @media (min-width: 640px) { .status-grid { grid-template-columns: 1fr 1fr; } }
+  .status-pane { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 22px; }
+  .status-pane h4 { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 12px; }
+  .status-pane ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .status-pane li { position: relative; padding-left: 18px; font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+  .status-pane li::before { content: "✓"; position: absolute; left: 0; color: var(--p-primary); font-weight: 700; }
+  .status-pane.limitations li::before { content: "–"; color: var(--p-secondary-accent); }
 
-  .status-card {
-    background: var(--p-bg-alt);
-    border-radius: var(--radius-md);
-    padding: 18px 22px;
-  }
-  .status-card h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--grey-2); margin-bottom: 12px; }
-  .status-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .status-card li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
-  .status-card li::before { content: "✓"; color: var(--p-primary); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-  .status-card.limitation li::before { content: "–"; color: var(--grey-2); }
-
-  /* ─── CTA ───────────────────────────────────────────────────── */
+  /* ─── FOOTER CTA SECTION ─────────────────────────────────────────── */
   .cta-section { text-align: center; padding: 64px 0 80px; }
   .cta-title { font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 700; color: var(--ink); margin-bottom: 12px; letter-spacing: -0.01em; }
   .cta-sub { color: var(--grey-1); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
   .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-  /* ─── FOOTER ────────────────────────────────────────────────── */
-  footer { border-top: 1px solid var(--p-footer-border); padding: 28px 0; text-align: center; color: var(--grey-2); font-size: 13px; }
+  /* ─── FOOTER ─────────────────────────────────────────────────────── */
+  footer { border-top: 1px solid var(--p-border); padding: 28px 0; text-align: center; color: var(--grey-2); font-size: 13px; }
   footer a { color: var(--grey-1); text-decoration: none; transition: color var(--transition); }
   footer a:hover { color: var(--p-primary); }
 
   a:focus-visible, button:focus-visible { outline: 2px solid var(--p-primary); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 767px) {
+    .hero-visual-inner { grid-template-columns: 1fr; }
+    section { padding: 40px 0; }
+    .hero { padding: 72px 0 56px; }
+  }
 </style>
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     1. HEADER + NAV  (REQUIRED)[cite: 3]
+     ═══════════════════════════════════════════════════════════════════ -->
 <header>
   <div class="container fade-in delay-1">
     <nav aria-label="Primary navigation">
@@ -415,8 +365,12 @@
         <span>NATHAN EHNES</span>
       </a>
       <ul class="nav-links">
-        <li><a href="https://github.com/NEhnes/WEBots-ESP32-CANBus" target="_blank" rel="noopener">GitHub</a></li>
-        <li><a href="../../index.html">← All Projects</a></li>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#implementation">Implementation</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#build">Build</a></li>
+        <li><a href="https://github.com/NEhnes/WEBots-ESP32-CANBus" target="_blank" rel="noopener">GitHub ↗</a></li>
       </ul>
     </nav>
   </div>
@@ -424,166 +378,192 @@
 
 <main>
 
-  <!-- ─── HERO ──────────────────────────────────────────────── -->
-  <section class="hero">
-    <div class="container">
-      <a href="../../index.html" class="hero-breadcrumb fade-in delay-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-        All Projects
-      </a>
-
-      <div class="hero-eyebrow fade-in delay-2">ESP32 · CAN 2.0B · micro-ROS · ROS 2 Jazzy</div>
+  <!-- ═══════════════════════════════════════════════════════════════════
+       2. HERO  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="container hero-inner">
+      <div class="hero-eyebrow fade-in delay-2">Design Team · 2026</div>
 
       <h1 class="hero-title fade-in delay-2">WEBots ESP32 Robot<br>Communications Architecture</h1>
 
-      <p class="hero-punchline fade-in delay-3">Distributed CAN bus and micro-ROS communication layers for a humanoid robot platform.</p>
-
-      <p class="hero-desc fade-in delay-3">
-        A dual-layer communications stack for the WEBots humanoid robot: a noise-resistant CAN 2.0B bus
-        for deterministic local control data, and micro-ROS integration for full ROS 2 graph participation.
-        Designed as a foundation for future motor-controller PCBs.
+      <p class="hero-punchline fade-in delay-3">
+        Distributed CAN bus and micro-ROS communication layers for the WEBots humanoid robot platform.[cite: 1, 2]
       </p>
 
+      <!-- Exactly 3 meta items[cite: 3] -->
       <div class="hero-meta fade-in delay-4">
         <span class="meta-item">
-          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          2026
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+          Solo Project[cite: 2]
         </span>
         <span class="meta-item">
-          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          Solo Project
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
+          </svg>
+          ESP32 · CAN 2.0B · micro-ROS[cite: 2]
         </span>
         <span class="meta-item">
-          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          ESP32-DevKit / ESP32DOIT DevKit
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/>
+          </svg>
+          ROS 2 Jazzy Graph Integration[cite: 2]
         </span>
       </div>
 
       <div class="hero-actions fade-in delay-5">
         <a class="btn btn-primary" href="https://github.com/NEhnes/WEBots-ESP32-CANBus" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
-          View on GitHub
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+          </svg>
+          View Repository
         </a>
-        <a class="btn btn-secondary" href="#architecture">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          Architecture
-        </a>
+        <a class="btn btn-secondary" href="#architecture">Explore Architecture</a>
       </div>
-    </div>
-  </section>
 
-  <!-- ─── IMAGE PLACEHOLDER ────────────────────────────────────── -->
-  <section style="padding-top: 0;" aria-label="Project image">
-    <div class="container">
-      <figure class="project-image fade-in delay-3">
-        <img src="./images/hero-communications-diagram.png" alt="Communications architecture block diagram showing CAN 2.0B bus between ESP32 sender/receiver nodes and micro-ROS serial transport to ROS 2 Jazzy agent" />
-        <figcaption>Two-layer communications architecture — CAN bus + micro-ROS</figcaption>
+      <!-- Spec pills + device wireframe placeholder[cite: 3] -->
+      <figure class="hero-visual fade-in delay-6" aria-label="Communications system overview visual">
+        <div class="hero-visual-inner">
+          <div class="device-wireframe" aria-label="ESP32 and MCP2515 hardware node deployment">
+            <span>Prototype Distributed Nodes<br><small style="color:var(--grey-1); font-size:11px;">ESP32-DevKit / ESP32DOIT</small></span>[cite: 2]
+          </div>
+          <div class="visual-specs">
+            <div class="spec-pill"><strong>Local Bus Speed</strong><span>500 kbps</span>[cite: 2]</div>
+            <div class="spec-pill"><strong>CAN Standard</strong><span>2.0B over SPI</span>[cite: 2]</div>
+            <div class="spec-pill"><strong>ROS 2 Target</strong><span>Jazzy Jalisco</span>[cite: 2]</div>
+            <div class="spec-pill"><strong>Transport Layer</strong><span>Serial micro-ROS</span>[cite: 2]</div>
+          </div>
+        </div>
+        <figcaption>Two-layer communications architecture — Local CAN bus + Serial micro-ROS transport link[cite: 2]</figcaption>
+      </figure>
+
+      <!-- Real project image layer[cite: 3] -->
+      <figure class="project-image fade-in delay-6">
+        <img src="./images/hero-communications-diagram.png" alt="Communications architecture block diagram showing CAN 2.0B bus between ESP32 sender/receiver nodes and micro-ROS serial transport to ROS 2 Jazzy agent" />[cite: 1]
+        <figcaption>High-level system interaction layout detailing local differential telemetry and ROS node instantiation[cite: 1, 2]</figcaption>
       </figure>
     </div>
   </section>
 
-  <!-- ─── PROBLEM STATEMENT ──────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       3. PROBLEM STATEMENT  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="problem" aria-labelledby="problem-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="problem-heading">Problem Statement</h2>
-        <span class="count">— why this matters</span>
+        <span class="count">— why this was built</span>[cite: 3]
       </div>
       <div class="problem-block fade-in delay-4">
         <p>
-          <strong>The WEBots humanoid robot needs reliable distributed communications</strong> — but
-          single-ended serial or WiFi links are vulnerable near PWM signals, motor drivers, and switching
-          power supplies in a robot chassis.
+          <strong>Single-ended serial or WiFi links are exceptionally vulnerable near PWM signals, motor drivers, and switching power supplies inside a compact robot chassis.</strong>[cite: 2]
         </p>
         <p>
-          Multiple ankle, knee, and subsystem motor controllers require deterministic, noise-resistant
-          communication under motor-drive electrical noise. Meanwhile, higher-level robot behavior
-          decisions live in a ROS 2 graph and need to integrate cleanly with the ESP32 firmware.
+          The WEBots humanoid robot platform requires a dependable, distributed infrastructure[cite: 1, 2]. Multiple ankle, knee, and structural subsystem motor controllers must achieve deterministic, noise-resistant telemetry under severe electrical noise[cite: 2]. Concurrently, higher-level tactical behavioral states inside a ROS 2 graph need a straightforward integration pathway into individual MCU firmware layers[cite: 2].
         </p>
         <p>
-          This project builds a <strong>dual-layer communications stack</strong>: CAN 2.0B for local
-          control data and micro-ROS for ROS 2 graph integration — designed to scale from prototype
-          modules to the electrical team's future custom PCB.
+          This repository establishes a dual-layer communications prototype stack[cite: 2]: a localized CAN 2.0B bus for noise-isolated frame delivery and an integrated micro-ROS node interface[cite: 2]—deliberately built to scale forward into the electrical team's future custom PCB modules[cite: 2].
         </p>
       </div>
     </div>
   </section>
 
-  <!-- ─── ARCHITECTURE ────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       4. TECHNICAL ARCHITECTURE  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="architecture" aria-labelledby="architecture-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="architecture-heading">Technical Architecture</h2>
-        <span class="count">— two-layer communication stack</span>
+        <span class="count">— distributed stack design</span>[cite: 2]
       </div>
+
+      <p class="fade-in delay-3" style="max-width: 700px; margin-bottom: 24px;">
+        The system isolates low-level control loops from high-level state graphs by implementing a localized network topology alongside serial broker pipelines[cite: 2].
+      </p>
 
       <div class="arch-grid fade-in delay-4">
         <div class="arch-card">
           <div class="arch-card-icon" aria-hidden="true">⚡</div>
-          <h3>CAN 2.0B Layer</h3>
+          <h3>CAN 2.0B Local Layer</h3>
           <p>
-            Low-level, noise-resistant bus for deterministic joystick telemetry between ESP32 nodes
-            over MCP2515 controllers at <strong>500 kbps</strong>. Fire-and-forget with application-level ACK.
+            Low-level, noise-resistant bus handling joystick control telemetry over independent MCP2515 controllers at <strong>500 kbps</strong>[cite: 2]. Provides fire-and-forget robustness reinforced by target software confirmation strategies[cite: 2].
           </p>
-          <p>
-            Sender reads joystick X/Y ADC values, packs them into 8-byte CAN frames on ID
-            <code>0x036</code>, waits up to <strong>500 ms</strong> for ACK ID <code>0x037</code>,
-            and retries up to <strong>3 times</strong>. Loop runs at ~25 Hz.
-          </p>
+          <div class="code-inline-container">
+            <code>ID: 0x036</code> · <code>ID: 0x037 (ACK)</code>[cite: 2]
+          </div>
         </div>
 
         <div class="arch-card">
           <div class="arch-card-icon" aria-hidden="true">🤖</div>
-          <h3>micro-ROS Layer</h3>
+          <h3>micro-ROS Node Layer</h3>
           <p>
-            High-level ROS 2 integration path via micro-ROS serial transport connecting the ESP32
-            to a full <strong>ROS 2 Jazzy</strong> agent. Bidirectional: ESP32 publishes topics and
-            responds to LED control commands.
+            High-level ROS 2 integration pathway utilizing specialized serial transport connecting the MCU cluster straight into a native <strong>ROS 2 Jazzy</strong> environment to enable graph participation[cite: 2].
           </p>
+          <div class="code-inline-container">
+            <code>/joystick_x_pub</code> · <code>/led_control</code>[cite: 2]
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       5. IMPLEMENTATION DETAILS  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
+  <section id="implementation" aria-labelledby="implementation-heading">
+    <div class="container">
+      <div class="section-header fade-in delay-3">
+        <h2 id="implementation-heading">Implementation Details</h2>
+        <span class="count">— firmware structure</span>[cite: 2]
+      </div>
+
+      <div class="impl-grid fade-in delay-4">
+        <div class="impl-card">
+          <div class="impl-card-icon" aria-hidden="true">📤</div>
+          <h3>Sender TX &amp; Retry Logic</h3>
           <p>
-            Publishers: <code>/joystick_x_pub</code> (50 ms), <code>/goose_calls</code> (400 ms).
-            Subscriber: <code>/led_control</code> accepts <code>"ON"</code>/<code>"OFF"</code>.
+            Reads analog input stick axis configurations through onboard ADC pins[cite: 2]. It packages the measurements into fixed 8-byte structures on CAN frame ID <code>0x036</code>, then stalls up to <strong>500 ms</strong> watching for an ACK packet on ID <code>0x037</code>[cite: 2]. The loop retries up to <strong>3 times</strong> sequentially, targeting an execution pace of roughly <strong>25 Hz</strong>[cite: 2].
           </p>
         </div>
 
-        <div class="arch-card">
-          <div class="arch-card-icon" aria-hidden="true">🔗</div>
-          <h3>ACK Reliability</h3>
+        <div class="impl-card">
+          <div class="impl-card-icon" aria-hidden="true">📥</div>
+          <h3>Receiver RX &amp; Filtering</h3>
           <p>
-            Application-level ACK mechanism gives command delivery visibility instead of
-            fire-and-forget. The receiver decodes X/Y values, applies a <strong>500-unit deadzone</strong>,
-            sends an immediate ACK, and displays direction on an SSD1306 OLED.
-          </p>
-          <p>
-            The ACK timeout and retry strategy exposes delivery failures immediately — critical
-            for integration with motor-controller feedback loops.
+            Monitors incoming hardware line identifiers[cite: 2]. Upon catching telemetry from ID <code>0x036</code>, it instantly returns an acknowledgment frame back on ID <code>0x037</code>[cite: 2]. It applies a software <strong>500-unit center deadzone</strong> to screen out telemetry sensor flicker, passing filtered tracking directions directly out onto an SSD1306 OLED screen display panel[cite: 2].
           </p>
         </div>
 
-        <div class="arch-card">
-          <div class="arch-card-icon" aria-hidden="true">📦</div>
-          <h3>Scalable for PCB</h3>
+        <div class="impl-card">
+          <div class="impl-card-icon" aria-hidden="true">📰</div>
+          <h3>Active Graph Publishers</h3>
           <p>
-            The communication stack is designed to port directly to the electrical team's
-            future custom PCB. CAN 2.0B is deterministic, widely supported, and compatible with
-            future MCP2551 or TJA1050 transceivers.
+            The dedicated micro-ROS subsystem handles independent parallel execution timers[cite: 2]. Topic payload handler <code>/joystick_x_pub</code> streams data changes at low-latency <strong>50 ms</strong> intervals, while <code>/goose_calls</code> broadcasts string notifications uniformly every <strong>400 ms</strong>[cite: 2].
           </p>
+        </div>
+
+        <div class="impl-card">
+          <div class="impl-card-icon" aria-hidden="true">📬</div>
+          <h3>Subscribers &amp; Services</h3>
           <p>
-            Next steps include a CAN transport layer that fragments ROS 2 messages larger than
-            8 bytes and reassembles them with per-frame ACKs.
+            An internal subscriber actively logs incoming instructions from <code>/led_control</code>, verifying text parameters (<code>"ON"</code>/<code>"OFF"</code>) to drive internal hardware pins[cite: 2]. A service layout framework is provisioned within the infrastructure for a multi-variable calculation interface (<code>average4</code>) using dedicated header definitions[cite: 2].
           </p>
         </div>
       </div>
 
-      <!-- Code snippet -->
-      <div class="code-block fade-in delay-5" style="margin-top: 28px;">
-        <pre><span class="hl">// CAN frame — joystick telemetry on ID 0x036</span>
+      <!-- Core code structural layouts[cite: 3] -->
+      <div class="code-block fade-in delay-5">
+        <pre><span class="hl">// CAN frame — joystick telemetry mapping[cite: 2]</span>
 canMsg.can_id  = 0x036;
 canMsg.can_dlc = 8;
 memcpy(&canMsg.data[0], &VRX, sizeof(VRX));
 memcpy(&canMsg.data[4], &VRY, sizeof(VRY));
 
-<span class="hl">// micro-ROS publisher initialization</span>
+<span class="hl">// micro-ROS publisher setup macro[cite: 2]</span>
 rclc_publisher_init_default(
   &esp32_pub, &node,
   ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
@@ -592,212 +572,218 @@ rclc_publisher_init_default(
     </div>
   </section>
 
-  <!-- ─── KEY RESULTS ─────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       6. RESULTS & METRICS  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="results" aria-labelledby="results-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="results-heading">Key Results</h2>
-        <span class="count">— what was delivered</span>
+        <span class="count">— performance benchmarks</span>[cite: 2]
       </div>
-      <ul class="results-list fade-in delay-4">
-        <li>
-          Built a <strong>CAN 2.0B sender/receiver pair</strong> for joystick telemetry using ESP32,
-          MCP2515, and a <strong>500 kbps</strong> bus.
-        </li>
-        <li>
-          Added <strong>ACK-based reliability</strong> with retry handling — giving command delivery
-          visibility instead of fire-and-forget transmission.
-        </li>
-        <li>
-          Integrated <strong>micro-ROS on ESP32</strong> with stable serial transport to a full
-          <strong>ROS 2 Jazzy</strong> agent.
-        </li>
-        <li>
-          Demonstrated <strong>bidirectional ROS behavior</strong>: ESP32 publishes joystick and string
-          topics, and responds to LED control commands.
-        </li>
-        <li>
-          Designed the communication stack to <strong>scale from prototype modules</strong> to the
-          electrical team's future custom PCB.
-        </li>
-      </ul>
+
+      <div class="metrics-grid fade-in delay-4">
+        <div class="metric-card">
+          <div class="metric-value">500k</div>
+          <div class="metric-label">Bus Speed Configuration</div>[cite: 2]
+          <p>Stable data transfers over MCP2515 physical transceivers under simulated node environments[cite: 2].</p>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">25 Hz</div>
+          <div class="metric-label">Local Telemetry Pacing</div>[cite: 2]
+          <p>Deterministic local timing loop including reliable 500 ms ACK timeouts and a 3x packet retry limit[cite: 2].</p>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">50 ms</div>
+          <div class="metric-label">Graph Topic Publication</div>[cite: 2]
+          <p>High-frequency micro-ROS publisher loop feeding joystick measurements straight into the ROS 2 Jazzy ecosystem[cite: 2].</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- ─── DESIGN CHALLENGES ───────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       7. DESIGN CHALLENGES  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="challenges" aria-labelledby="challenges-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="challenges-heading">Design Challenges</h2>
-        <span class="count">— decisions and trade-offs</span>
+        <span class="count">— engineering decisions</span>[cite: 2]
       </div>
-      <div class="challenges-grid fade-in delay-4">
+      <div class="challenge-grid fade-in delay-4">
         <div class="challenge-card">
-          <h4>Electrical noise in robot control buses</h4>
+          <div class="challenge-index">Challenge 01</div>[cite: 3]
+          <h3>Electrical noise in robot control buses</h3>[cite: 2]
           <p>
-            Single-ended links fail near PWM/motor drivers. CAN differential signaling adds wiring
-            complexity but directly targets noise immunity. Chose CAN 2.0B over MCP2515 for
-            deterministic timing and future PCB compatibility.
+            Single-ended links fail near high-power PWM/motor drivers[cite: 2]. CAN differential signaling adds wiring overhead but guarantees excellent physical noise immunity[cite: 2]. I selected CAN 2.0B over external MCP2515 logic because it guarantees predictable hardware timelines and directly aligns with our future custom PCB components[cite: 2].
           </p>
         </div>
         <div class="challenge-card">
-          <h4>Reliable local command delivery</h4>
+          <div class="challenge-index">Challenge 02</div>[cite: 3]
+          <h3>Reliable local command delivery</h3>[cite: 2]
           <p>
-            Fire-and-forget CAN frames hide dropped commands. Adding application-level ACK costs bus
-            time but exposes failures immediately. Implemented ACK ID 0x037 with 500 ms timeout and
-            3 retries.
+            Standard fire-and-forget topologies completely obscure dropped packets[cite: 2]. Introducing an application-layer tracking ACK costs system bus bandwidth but provides direct transmission visibility[cite: 2]. I addressed this by structuring a dedicated confirmation frame on ID <code>0x037</code> accompanied by fixed retry windows[cite: 2].
           </p>
         </div>
         <div class="challenge-card">
-          <h4>Joystick drift and deadzone tuning</h4>
+          <div class="challenge-index">Challenge 03</div>[cite: 3]
+          <h3>Joystick drift and deadzone tuning</h3>[cite: 2]
           <p>
-            Raw ADC values fluctuate around center creating false direction changes. A larger
-            deadzone improves stability but reduces sensitivity. Used a 500-unit deadzone as a
-            practical prototype threshold.
+            Raw analog potentiometer readings exhibit persistent value drift around center coordinates, generating false direction transitions[cite: 2]. Expanding the deadzone improves center-state consistency but reduces control resolution[cite: 2]. Settled on a balanced <strong>500-unit deadzone threshold</strong> for practical module evaluations[cite: 2].
           </p>
         </div>
         <div class="challenge-card">
-          <h4>CAN prototypes → ROS 2 integration</h4>
+          <div class="challenge-index">Challenge 04</div>[cite: 3]
+          <h3>Transitioning prototypes into ROS 2</h3>[cite: 2]
           <p>
-            CAN is excellent for local control; higher-level behavior needs ROS graph integration.
-            micro-ROS serial transport is simpler than custom CAN transport but depends on a host
-            agent. micro-ROS node was built first, leaving custom CAN transport as the next step.
+            While CAN is optimized for immediate joint movements, complex behaviors require structured graph accessibility[cite: 2]. Implementing micro-ROS over serial links reduces firmware complexity compared to custom fragmentation logic but creates a dependency on an active host middleware agent[cite: 2]. Built the serial node first to clear basic execution criteria[cite: 2].
           </p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ─── TECHNOLOGIES ────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       8. SKILLS & TECHNOLOGIES  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="skills" aria-labelledby="skills-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="skills-heading">Technologies Used</h2>
-        <span class="count">— skills applied</span>
+        <span class="count">— applied expertise</span>[cite: 2]
       </div>
       <div class="skills-grid fade-in delay-4">
-        <span class="skill featured">Embedded C++</span>
-        <span class="skill featured">CAN 2.0B</span>
-        <span class="skill featured">micro-ROS</span>
-        <span class="skill featured">ROS 2 Jazzy</span>
-        <span class="skill">ESP32</span>
-        <span class="skill">MCP2515</span>
-        <span class="skill">PlatformIO</span>
-        <span class="skill">Arduino Framework</span>
-        <span class="skill">SPI / UART</span>
-        <span class="skill">SSD1306 OLED</span>
-        <span class="skill">ADC / Joystick</span>
-        <span class="skill">Git / Linux CLI</span>
+        <span class="skill featured">Embedded C++</span>[cite: 2]
+        <span class="skill featured">CAN 2.0B</span>[cite: 2]
+        <span class="skill featured">micro-ROS</span>[cite: 2]
+        <span class="skill featured">ROS 2 Jazzy</span>[cite: 2]
+        <span class="skill">PlatformIO</span>[cite: 2]
+        <span class="skill">Arduino Framework</span>[cite: 2]
+        <span class="skill">MCP2515 Controller</span>[cite: 2]
+        <span class="skill">SPI / UART Protocols</span>[cite: 2]
+        <span class="skill">SSD1306 OLED Interfacing</span>[cite: 2]
+        <span class="skill">Analog ADC Sampling</span>[cite: 2]
+        <span class="skill">Distributed Embedded Architecture</span>[cite: 2]
       </div>
     </div>
   </section>
 
-  <!-- ─── BUILD & RUN ─────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       9. BUILD & REPOSITORY  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="build" aria-labelledby="build-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="build-heading">Build and Run</h2>
-        <span class="count">— getting started</span>
+        <span class="count">— project reproduction</span>[cite: 2]
       </div>
 
-      <div class="arch-grid fade-in delay-4" style="margin-bottom: 32px;">
-        <div class="arch-card">
-          <div class="arch-card-icon" aria-hidden="true">⚙</div>
-          <h3>CAN Bus</h3>
-          <p style="margin-bottom: 16px;">ESP32-DevKit + MCP2515 + SSD1306 OLED + joystick.</p>
+      <div class="build-grid fade-in delay-4">
+        <div class="build-card">
+          <h3>CAN Bus Subsystem Compilation</h3>
+          <p>Requires an SPI interface connection link joining the host MCU and the MCP2515 driver board[cite: 2].</p>
           <table class="wire-table">
             <thead>
-              <tr>
-                <th>Signal</th>
-                <th>ESP32 Pin</th>
-                <th>MCP2515</th>
-              </tr>
+              <tr><th>Signal</th><th>ESP32 Pin</th><th>MCP2515 Pin</th></tr>
             </thead>
             <tbody>
-              <tr><td>SCK</td>  <td><code>GPIO 18</code></td> <td>SCK</td></tr>
-              <tr><td>MISO</td> <td><code>GPIO 19</code></td> <td>SO</td></tr>
-              <tr><td>MOSI</td> <td><code>GPIO 23</code></td> <td>SI</td></tr>
-              <tr><td>CS</td>   <td><code>GPIO 5</code></td>  <td>CS</td></tr>
-              <tr><td>GND</td>  <td>GND</td>                  <td>GND</td></tr>
-              <tr><td>3.3V</td> <td>3.3V</td>                 <td>VCC</td></tr>
+              <tr><td>SCK</td><td><code>GPIO 18</code></td><td>SCK</td></tr>
+              <tr><td>MISO</td><td><code>GPIO 19</code></td><td>SO</td></tr>
+              <tr><td>MOSI</td><td><code>GPIO 23</code></td><td>SI</td></tr>
+              <tr><td>CS</td><td><code>GPIO 5</code></td><td>CS</td></tr>
+              <tr><td>GND</td><td><code>GND</code></td><td>GND</td></tr>
+              <tr><td>3.3V</td><td><code>3.3V</code></td><td>VCC</td></tr>
             </tbody>
-          </table>
-          <code>cd can-bus/ESP_CAN_SEND && platformio run --target upload</code>
+          </table>[cite: 2]
+          <div class="code-block">
+            <pre>cd can-bus/ESP_CAN_SEND
+platformio run --target upload[cite: 2]</pre>
+          </div>
         </div>
 
-        <div class="arch-card">
-          <div class="arch-card-icon" aria-hidden="true">🤖</div>
-          <h3>micro-ROS</h3>
-          <p style="margin-bottom: 16px;">ESP32DOIT DevKit + serial to ROS 2 Jazzy agent + optional LED on GPIO 18.</p>
-          <p style="font-size: 13px; color: var(--grey-1); margin-bottom: 14px;">
-            Run the host agent on your ROS 2 machine:
-          </p>
-          <code style="display:block; background: var(--p-surface); color: var(--p-tag-color); font-family: monospace; font-size: 12px; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px;">
-            ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
-          </code>
-          <code style="display:block; background: var(--p-surface); color: var(--p-tag-color); font-family: monospace; font-size: 12px; padding: 10px 14px; border-radius: 6px;">
-            cd microros && platformio run --target upload
-          </code>
+        <div class="build-card">
+          <h3>micro-ROS Node Initialization</h3>
+          <p>Deploys a serial transport link communication endpoint directly matching your local device mount parameters[cite: 2].</p>
+          <div class="code-block">
+            <pre><span class="hl"># Compile and flash local node[cite: 2]</span>
+cd microros
+platformio run --target upload
+
+<span class="hl"># Fire up the external broker agent[cite: 2]</span>
+ros2 run micro_ros_agent micro_ros_agent \
+  serial --dev /dev/ttyUSB0</pre>
+          </div>
         </div>
       </div>
 
-      <div class="code-block fade-in delay-5" style="margin-top: 0;">
-        <pre><span class="hl"># Verify ROS topics</span>
+      <pre class="file-tree"><span class="dir">webots-architecture/</span>
+├── <span class="dir">can-bus/</span>
+│   ├── <span class="dir">ESP_CAN_SEND/</span>      <span class="note"># Joystick data processing and sender node source[cite: 2]</span>
+│   └── <span class="dir">ESP_CAN_RECV/</span>      <span class="note"># Display logic, target tracking, and ACK transceiver[cite: 2]</span>
+└── <span class="dir">microros/</span>
+    └── <span class="dir">src/</span>               <span class="note"># Interactive publishers and subscriber routines[cite: 2]</span></pre>
+
+      <div class="code-block fade-in delay-5">
+        <pre><span class="hl"># Verify runtime topic routing[cite: 2]</span>
 ros2 topic list
 ros2 topic echo /joystick_x_pub
-ros2 topic echo /goose_calls
 ros2 topic pub /led_control std_msgs/msg/String "{data: 'ON'}"</pre>
       </div>
     </div>
   </section>
 
-  <!-- ─── STATUS & ROADMAP ────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       10. STATUS & ROADMAP  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="roadmap" aria-labelledby="roadmap-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
-        <h2 id="roadmap-heading">Status & Roadmap</h2>
-        <span class="count">— what's next</span>
+        <h2 id="roadmap-heading">Status &amp; Roadmap</h2>
+        <span class="count">— future development</span>[cite: 2]
       </div>
+
       <div class="status-grid fade-in delay-4">
-        <div class="status-card">
-          <h4>Working</h4>
+        <div class="status-pane">
+          <h4>Working Elements</h4>
           <ul>
-            <li>CAN sender transmits joystick telemetry at 25 Hz</li>
-            <li>CAN receiver decodes telemetry, sends ACKs, drives OLED</li>
-            <li>micro-ROS node initializes with ROS 2 Jazzy agent</li>
-            <li>ESP32 publishes /joystick_x_pub and /goose_calls</li>
-            <li>ESP32 subscribes to /led_control</li>
+            <li>CAN sender runs telemetry conversion at 25 Hz loops[cite: 2]</li>
+            <li>Receiver decodes line signals and returns real-time ACKs[cite: 2]</li>
+            <li>OLED interface accurately renders active spatial directions[cite: 2]</li>
+            <li>micro-ROS link maintains serial connectivity with active agent[cite: 2]</li>
           </ul>
         </div>
-        <div class="status-card limitation">
-          <h4>Limitations</h4>
+        <div class="status-pane limitations">
+          <h4>Current Limitations</h4>
           <ul>
-            <li>Error logging not yet centralized</li>
-            <li>Deadzone tuned for prototype joystick, not motor feedback</li>
-            <li>micro-ROS service client prepared but not fully exercised</li>
-            <li>No ROS 2-over-CAN fragmentation/reassembly layer</li>
+            <li>Central diagnostics error reporting is not yet instantiated[cite: 2]</li>
+            <li>Deadzones map to experimental stick hardware instead of actuators[cite: 2]</li>
+            <li>Client nodes are fully structural but missing dynamic interaction loops[cite: 2]</li>
+            <li>Lacks custom multi-packet framing/reassembly capabilities[cite: 2]</li>
           </ul>
         </div>
       </div>
+
       <div class="problem-block fade-in delay-5" style="margin-top: 24px;">
-        <strong>Roadmap:</strong> Add structured error counters for CAN send failures and ACK timeouts.
-        Complete the custom <code>average4</code> service client path using generated ROSIDL types.
-        Design a CAN transport layer that fragments ROS 2 messages larger than 8 bytes with per-frame
-        ACKs. Validate against the electrical team's custom PCB and real servo/BLDC loads.
+        <strong>Project Roadmap:</strong> Incorporate formal diagnostic error state counters covering delivery timeouts and frame check failures[cite: 2]. Fully map the <code>average4</code> service handling routines using clean ROSIDL compilation steps[cite: 2]. Construct a robust multi-packet assembly layer over standard CAN channels to fragment payloads exceeding 8 bytes[cite: 2]. Validate comprehensive stack reliability against custom layout PCBs under high physical motor brush loads[cite: 2].
       </div>
     </div>
   </section>
 
-  <!-- ─── CTA ─────────────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       11. FOOTER CTA SECTION  (REQUIRED)[cite: 3]
+       ═══════════════════════════════════════════════════════════════════ -->
   <section id="contact" class="cta-section" aria-labelledby="contact-heading">
     <div class="container">
       <h2 id="contact-heading" class="cta-title fade-in delay-5">Interested in the architecture?</h2>
       <p class="cta-sub fade-in delay-5">
-        Check out the full source code, or explore the other robotics and embedded projects in the portfolio.
+        Explore the complete implementation repository or return to inspect additional embedded engineering developments.
       </p>
       <div class="cta-buttons fade-in delay-6">
         <a class="btn btn-primary" href="https://github.com/NEhnes/WEBots-ESP32-CANBus" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+          </svg>
           View on GitHub
         </a>
         <a class="btn btn-secondary" href="../../index.html">
@@ -809,6 +795,9 @@ ros2 topic pub /led_control std_msgs/msg/String "{data: 'ON'}"</pre>
 
 </main>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     12. HTML FOOTER  (REQUIRED)[cite: 3]
+     ═══════════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
     <p>Nathan Ehnes — BESc. Electrical Engineering + AI Systems Engineering · University of Western Ontario</p>
