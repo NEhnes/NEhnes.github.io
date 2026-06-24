@@ -6,39 +6,39 @@
 <title>WEBots ESP32 Robot Communications Architecture — Nathan Ehnes</title>
 <meta name="description" content="ESP32-based CAN 2.0B and micro-ROS communication layers for the WEBots humanoid robot platform." />
 <style>
-  /* ═══════════════════════════════════════════════════════════════════════
-     MODERN DOLCH DARK — GOLD VARIANT[cite: 3]
-     ───────────────────────────────────────────────────────────────────────
-     Primary accent:   #d98f00  gold  — buttons, active tags, headings[cite: 3]
-     Secondary accent: #c86428  amber — left-bar card reveals, borders[cite: 3]
+  /* ═══════════════════════════════════════════════════════════════════
+     MODERN DOLCH DARK — GOLD VARIANT
+     ───────────────────────────────────────────────────────────────────
+     Primary accent:   #d98f00  gold  — buttons, active tags, headings
+     Secondary accent: #c86428  amber — left-bar card reveals, borders
      ═══════════════════════════════════════════════════════════════════ */
   :root {
-    /* PRIMARY GOLD ACCENT[cite: 3] */
+    /* PRIMARY GOLD ACCENT */
     --p-primary:          #d98f00;
     --p-primary-alt:      #c28000;
     --p-primary-soft:     #6b4600;
 
-    /* SECONDARY ACCENT[cite: 3] */
+    /* SECONDARY ACCENT */
     --p-secondary-accent: #c86428;
 
-    /* NEUTRALS[cite: 3] */
+    /* NEUTRALS */
     --p-secondary:        #8a8a8a;
     --p-secondary-lt:     #6a6a6a;
 
-    /* BACKGROUNDS[cite: 3] */
+    /* BACKGROUNDS */
     --p-bg:               #2a2a2a;
     --p-bg-alt:           #333333;
     --p-surface:          #383838;
 
-    /* TEXT[cite: 3] */
+    /* TEXT */
     --p-ink:              #f0f0f0;
     --p-ink-soft:         #c8c8c8;
 
-    /* BORDERS[cite: 3] */
+    /* BORDERS */
     --p-border:           rgba(240,240,240,0.07);
     --p-border-pill:      rgba(240,240,240,0.09);
 
-    /* COMPONENT TOKENS[cite: 3] */
+    /* COMPONENT TOKENS */
     --p-tag-bg:           rgba(217,143,0,0.12);
     --p-tag-color:        #eb9b00;
     --p-badge-bg:         rgba(217,143,0,0.15);
@@ -48,18 +48,18 @@
     --p-card-bg:          #333333;
     --p-gold:             #eec945;
 
-    /* BUTTONS[cite: 3] */
+    /* BUTTONS */
     --p-btn-primary-bg:        #d98f00;
     --p-btn-primary-fg:        #1a1a1a;
     --p-btn-secondary-bg:      #383838;
     --p-btn-secondary-fg:      #f0f0f0;
     --p-btn-secondary-border:  rgba(240,240,240,0.18);
 
-    /* TYPOGRAPHIC ACCENTS[cite: 3] */
+    /* TYPOGRAPHIC ACCENTS */
     --p-punchline:        #d98f00;
     --p-nav-hover:        #d98f00;
 
-    /* ALIASES[cite: 3] */
+    /* ALIASES */
     --green-1:  var(--p-primary-alt);
     --green-2:  var(--p-primary);
     --grey-1:   var(--p-secondary);
@@ -67,12 +67,12 @@
     --ink:      var(--p-ink);
     --ink-soft: var(--p-ink-soft);
 
-    /* SHADOWS[cite: 3] */
+    /* SHADOWS */
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
     --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
 
-    /* SHAPE[cite: 3] */
+    /* SHAPE */
     --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 18px;
@@ -355,7 +355,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     1. HEADER + NAV  (REQUIRED)[cite: 3]
+     1. HEADER + NAV  (REQUIRED)
      ═══════════════════════════════════════════════════════════════════ -->
 <header>
   <div class="container fade-in delay-1">
@@ -379,7 +379,7 @@
 <main>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       2. HERO  (REQUIRED)[cite: 3]
+       2. HERO  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section class="hero" id="hero">
     <div class="container hero-inner">
@@ -388,29 +388,29 @@
       <h1 class="hero-title fade-in delay-2">WEBots ESP32 Robot<br>Communications Architecture</h1>
 
       <p class="hero-punchline fade-in delay-3">
-        Distributed CAN bus and micro-ROS communication layers for the WEBots humanoid robot platform.[cite: 1, 2]
+        Distributed CAN bus and micro-ROS communication layers for the WEBots humanoid robot platform.
       </p>
 
-      <!-- Exactly 3 meta items[cite: 3] -->
+      <!-- Exactly 3 meta items -->
       <div class="hero-meta fade-in delay-4">
         <span class="meta-item">
           <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
           </svg>
-          Solo Project[cite: 2]
+          Solo Project
         </span>
         <span class="meta-item">
           <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/>
             <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
           </svg>
-          ESP32 · CAN 2.0B · micro-ROS[cite: 2]
+          ESP32 · CAN 2.0B · micro-ROS
         </span>
         <span class="meta-item">
           <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/>
           </svg>
-          ROS 2 Jazzy Graph Integration[cite: 2]
+          ROS 2 Jazzy Graph Integration
         </span>
       </div>
 
@@ -424,23 +424,23 @@
         <a class="btn btn-secondary" href="#architecture">Explore Architecture</a>
       </div>
 
-      <!-- Spec pills + device wireframe placeholder[cite: 3] -->
+      <!-- Spec pills + device wireframe placeholder -->
       <figure class="hero-visual fade-in delay-6" aria-label="Communications system overview visual">
         <div class="hero-visual-inner">
           <div class="device-wireframe" aria-label="ESP32 and MCP2515 hardware node deployment">
-            <span>Prototype Distributed Nodes<br><small style="color:var(--grey-1); font-size:11px;">ESP32-DevKit / ESP32DOIT</small></span>[cite: 2]
+            <span>Prototype Distributed Nodes<br><small style="color:var(--grey-1); font-size:11px;">ESP32-DevKit / ESP32DOIT</small></span>
           </div>
           <div class="visual-specs">
-            <div class="spec-pill"><strong>Local Bus Speed</strong><span>500 kbps</span>[cite: 2]</div>
-            <div class="spec-pill"><strong>CAN Standard</strong><span>2.0B over SPI</span>[cite: 2]</div>
-            <div class="spec-pill"><strong>ROS 2 Target</strong><span>Jazzy Jalisco</span>[cite: 2]</div>
-            <div class="spec-pill"><strong>Transport Layer</strong><span>Serial micro-ROS</span>[cite: 2]</div>
+            <div class="spec-pill"><strong>Local Bus Speed</strong><span>500 kbps</span></div>
+            <div class="spec-pill"><strong>CAN Standard</strong><span>2.0B over SPI</span></div>
+            <div class="spec-pill"><strong>ROS 2 Target</strong><span>Jazzy Jalisco</span></div>
+            <div class="spec-pill"><strong>Transport Layer</strong><span>Serial micro-ROS</span></div>
           </div>
         </div>
-        <figcaption>Two-layer communications architecture — Local CAN bus + Serial micro-ROS transport link[cite: 2]</figcaption>
+        <figcaption>Two-layer communications architecture — Local CAN bus + Serial micro-ROS transport link</figcaption>
       </figure>
 
-      <!-- Real project image layer[cite: 3] -->
+      <!-- Real project image layer -->
       <figure class="project-image fade-in delay-6">
         <img src="./assets/images/webots-canbus.jpeg" alt="Communications architecture block diagram showing CAN bus and micro-ROS link" />
         <figcaption>High-level system interaction layout detailing local differential telemetry and ROS node instantiation</figcaption>
@@ -449,40 +449,40 @@
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       3. PROBLEM STATEMENT  (REQUIRED)[cite: 3]
+       3. PROBLEM STATEMENT  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="problem" aria-labelledby="problem-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="problem-heading">Problem Statement</h2>
-        <span class="count">— why this was built</span>[cite: 3]
+        <span class="count">— why this was built</span>
       </div>
       <div class="problem-block fade-in delay-4">
         <p>
-          <strong>Single-ended serial or WiFi links are exceptionally vulnerable near PWM signals, motor drivers, and switching power supplies inside a compact robot chassis.</strong>[cite: 2]
+          <strong>Single-ended serial or WiFi links are exceptionally vulnerable near PWM signals, motor drivers, and switching power supplies inside a compact robot chassis.</strong>
         </p>
         <p>
-          The WEBots humanoid robot platform requires a dependable, distributed infrastructure[cite: 1, 2]. Multiple ankle, knee, and structural subsystem motor controllers must achieve deterministic, noise-resistant telemetry under severe electrical noise[cite: 2]. Concurrently, higher-level tactical behavioral states inside a ROS 2 graph need a straightforward integration pathway into individual MCU firmware layers[cite: 2].
+          The WEBots humanoid robot platform requires a dependable, distributed infrastructure. Multiple ankle, knee, and structural subsystem motor controllers must achieve deterministic, noise-resistant telemetry under severe electrical noise. Concurrently, higher-level tactical behavioral states inside a ROS 2 graph need a straightforward integration pathway into individual MCU firmware layers.
         </p>
         <p>
-          This repository establishes a dual-layer communications prototype stack[cite: 2]: a localized CAN 2.0B bus for noise-isolated frame delivery and an integrated micro-ROS node interface[cite: 2]—deliberately built to scale forward into the electrical team's future custom PCB modules[cite: 2].
+          This repository establishes a dual-layer communications prototype stack: a localized CAN 2.0B bus for noise-isolated frame delivery and an integrated micro-ROS node interface—deliberately built to scale forward into the electrical team's future custom PCB modules.
         </p>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       4. TECHNICAL ARCHITECTURE  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       4. TECHNICAL ARCHITECTURE  (REQUIRED/OPTIONAL INTERSECTION)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="architecture" aria-labelledby="architecture-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="architecture-heading">Technical Architecture</h2>
-        <span class="count">— distributed stack design</span>[cite: 2]
+        <span class="count">— distributed stack design</span>
       </div>
 
       <p class="fade-in delay-3" style="max-width: 700px; margin-bottom: 24px;">
-        The system isolates low-level control loops from high-level state graphs by implementing a localized network topology alongside serial broker pipelines[cite: 2].
+        The system isolates low-level control loops from high-level state graphs by implementing a localized network topology alongside serial broker pipelines.
       </p>
 
       <div class="arch-grid fade-in delay-4">
@@ -490,10 +490,10 @@
           <div class="arch-card-icon" aria-hidden="true">⚡</div>
           <h3>CAN 2.0B Local Layer</h3>
           <p>
-            Low-level, noise-resistant bus handling joystick control telemetry over independent MCP2515 controllers at <strong>500 kbps</strong>[cite: 2]. Provides fire-and-forget robustness reinforced by target software confirmation strategies[cite: 2].
+            Low-level, noise-resistant bus handling joystick control telemetry over independent MCP2515 controllers at <strong>500 kbps</strong>. Provides fire-and-forget robustness reinforced by target software confirmation strategies.
           </p>
           <div class="code-inline-container">
-            <code>ID: 0x036</code> · <code>ID: 0x037 (ACK)</code>[cite: 2]
+            <code>ID: 0x036</code> · <code>ID: 0x037 (ACK)</code>
           </div>
         </div>
 
@@ -501,10 +501,10 @@
           <div class="arch-card-icon" aria-hidden="true">🤖</div>
           <h3>micro-ROS Node Layer</h3>
           <p>
-            High-level ROS 2 integration pathway utilizing specialized serial transport connecting the MCU cluster straight into a native <strong>ROS 2 Jazzy</strong> environment to enable graph participation[cite: 2].
+            High-level ROS 2 integration pathway utilizing specialized serial transport connecting the MCU cluster straight into a native <strong>ROS 2 Jazzy</strong> environment to enable graph participation.
           </p>
           <div class="code-inline-container">
-            <code>/joystick_x_pub</code> · <code>/led_control</code>[cite: 2]
+            <code>/joystick_x_pub</code> · <code>/led_control</code>
           </div>
         </div>
       </div>
@@ -512,13 +512,13 @@
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       5. IMPLEMENTATION DETAILS  (REQUIRED)[cite: 3]
+       5. IMPLEMENTATION DETAILS  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="implementation" aria-labelledby="implementation-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="implementation-heading">Implementation Details</h2>
-        <span class="count">— firmware structure</span>[cite: 2]
+        <span class="count">— firmware structure</span>
       </div>
 
       <div class="impl-grid fade-in delay-4">
@@ -526,7 +526,7 @@
           <div class="impl-card-icon" aria-hidden="true">📤</div>
           <h3>Sender TX &amp; Retry Logic</h3>
           <p>
-            Reads analog input stick axis configurations through onboard ADC pins[cite: 2]. It packages the measurements into fixed 8-byte structures on CAN frame ID <code>0x036</code>, then stalls up to <strong>500 ms</strong> watching for an ACK packet on ID <code>0x037</code>[cite: 2]. The loop retries up to <strong>3 times</strong> sequentially, targeting an execution pace of roughly <strong>25 Hz</strong>[cite: 2].
+            Reads analog input stick axis configurations through onboard ADC pins. It packages the measurements into fixed 8-byte structures on CAN frame ID <code>0x036</code>, then stalls up to <strong>500 ms</strong> watching for an ACK packet on ID <code>0x037</code>. The loop retries up to <strong>3 times</strong> sequentially, targeting an execution pace of roughly <strong>25 Hz</strong>.
           </p>
         </div>
 
@@ -534,7 +534,7 @@
           <div class="impl-card-icon" aria-hidden="true">📥</div>
           <h3>Receiver RX &amp; Filtering</h3>
           <p>
-            Monitors incoming hardware line identifiers[cite: 2]. Upon catching telemetry from ID <code>0x036</code>, it instantly returns an acknowledgment frame back on ID <code>0x037</code>[cite: 2]. It applies a software <strong>500-unit center deadzone</strong> to screen out telemetry sensor flicker, passing filtered tracking directions directly out onto an SSD1306 OLED screen display panel[cite: 2].
+            Monitors incoming hardware line identifiers. Upon catching telemetry from ID <code>0x036</code>, it instantly returns an acknowledgment frame back on ID <code>0x037</code>. It applies a software <strong>500-unit center deadzone</strong> to screen out telemetry sensor flicker, passing filtered tracking directions directly out onto an SSD1306 OLED screen display panel.
           </p>
         </div>
 
@@ -542,7 +542,7 @@
           <div class="impl-card-icon" aria-hidden="true">📰</div>
           <h3>Active Graph Publishers</h3>
           <p>
-            The dedicated micro-ROS subsystem handles independent parallel execution timers[cite: 2]. Topic payload handler <code>/joystick_x_pub</code> streams data changes at low-latency <strong>50 ms</strong> intervals, while <code>/goose_calls</code> broadcasts string notifications uniformly every <strong>400 ms</strong>[cite: 2].
+            The dedicated micro-ROS subsystem handles independent parallel execution timers. Topic payload handler <code>/joystick_x_pub</code> streams data changes at low-latency <strong>50 ms</strong> intervals, while <code>/goose_calls</code> broadcasts string notifications uniformly every <strong>400 ms</strong>.
           </p>
         </div>
 
@@ -550,20 +550,20 @@
           <div class="impl-card-icon" aria-hidden="true">📬</div>
           <h3>Subscribers &amp; Services</h3>
           <p>
-            An internal subscriber actively logs incoming instructions from <code>/led_control</code>, verifying text parameters (<code>"ON"</code>/<code>"OFF"</code>) to drive internal hardware pins[cite: 2]. A service layout framework is provisioned within the infrastructure for a multi-variable calculation interface (<code>average4</code>) using dedicated header definitions[cite: 2].
+            An internal subscriber actively logs incoming instructions from <code>/led_control</code>, verifying text parameters (<code>"ON"</code>/<code>"OFF"</code>) to drive internal hardware pins. A service layout framework is provisioned within the infrastructure for a multi-variable calculation interface (<code>average4</code>) using dedicated header definitions.
           </p>
         </div>
       </div>
 
-      <!-- Core code structural layouts[cite: 3] -->
+      <!-- Core code structural layouts -->
       <div class="code-block fade-in delay-5">
-        <pre><span class="hl">// CAN frame — joystick telemetry mapping[cite: 2]</span>
+        <pre><span class="hl">// CAN frame — joystick telemetry mapping</span>
 canMsg.can_id  = 0x036;
 canMsg.can_dlc = 8;
 memcpy(&canMsg.data[0], &VRX, sizeof(VRX));
 memcpy(&canMsg.data[4], &VRY, sizeof(VRY));
 
-<span class="hl">// micro-ROS publisher setup macro[cite: 2]</span>
+<span class="hl">// micro-ROS publisher setup macro</span>
 rclc_publisher_init_default(
   &esp32_pub, &node,
   ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
@@ -573,71 +573,71 @@ rclc_publisher_init_default(
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       6. RESULTS & METRICS  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       6. RESULTS & METRICS  (REQUIRED/OPTIONAL INTERSECTION)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="results" aria-labelledby="results-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="results-heading">Key Results</h2>
-        <span class="count">— performance benchmarks</span>[cite: 2]
+        <span class="count">— performance benchmarks</span>
       </div>
 
       <div class="metrics-grid fade-in delay-4">
         <div class="metric-card">
           <div class="metric-value">500k</div>
-          <div class="metric-label">Bus Speed Configuration</div>[cite: 2]
-          <p>Stable data transfers over MCP2515 physical transceivers under simulated node environments[cite: 2].</p>
+          <div class="metric-label">Bus Speed Configuration</div>
+          <p>Stable data transfers over MCP2515 physical transceivers under simulated node environments.</p>
         </div>
         <div class="metric-card">
           <div class="metric-value">25 Hz</div>
-          <div class="metric-label">Local Telemetry Pacing</div>[cite: 2]
-          <p>Deterministic local timing loop including reliable 500 ms ACK timeouts and a 3x packet retry limit[cite: 2].</p>
+          <div class="metric-label">Local Telemetry Pacing</div>
+          <p>Deterministic local timing loop including reliable 500 ms ACK timeouts and a 3x packet retry limit.</p>
         </div>
         <div class="metric-card">
           <div class="metric-value">50 ms</div>
-          <div class="metric-label">Graph Topic Publication</div>[cite: 2]
-          <p>High-frequency micro-ROS publisher loop feeding joystick measurements straight into the ROS 2 Jazzy ecosystem[cite: 2].</p>
+          <div class="metric-label">Graph Topic Publication</div>
+          <p>High-frequency micro-ROS publisher loop feeding joystick measurements straight into the ROS 2 Jazzy ecosystem.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       7. DESIGN CHALLENGES  (REQUIRED)[cite: 3]
+       7. DESIGN CHALLENGES  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="challenges" aria-labelledby="challenges-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="challenges-heading">Design Challenges</h2>
-        <span class="count">— engineering decisions</span>[cite: 2]
+        <span class="count">— engineering decisions</span>
       </div>
       <div class="challenge-grid fade-in delay-4">
         <div class="challenge-card">
-          <div class="challenge-index">Challenge 01</div>[cite: 3]
-          <h3>Electrical noise in robot control buses</h3>[cite: 2]
+          <div class="challenge-index">Challenge 01</div>
+          <h3>Electrical noise in robot control buses</h3>
           <p>
-            Single-ended links fail near high-power PWM/motor drivers[cite: 2]. CAN differential signaling adds wiring overhead but guarantees excellent physical noise immunity[cite: 2]. I selected CAN 2.0B over external MCP2515 logic because it guarantees predictable hardware timelines and directly aligns with our future custom PCB components[cite: 2].
+            Single-ended links fail near high-power PWM/motor drivers. CAN differential signaling adds wiring overhead but guarantees excellent physical noise immunity. I selected CAN 2.0B over external MCP2515 logic because it guarantees predictable hardware timelines and directly aligns with our future custom PCB components.
           </p>
         </div>
         <div class="challenge-card">
-          <div class="challenge-index">Challenge 02</div>[cite: 3]
-          <h3>Reliable local command delivery</h3>[cite: 2]
+          <div class="challenge-index">Challenge 02</div>
+          <h3>Reliable local command delivery</h3>
           <p>
-            Standard fire-and-forget topologies completely obscure dropped packets[cite: 2]. Introducing an application-layer tracking ACK costs system bus bandwidth but provides direct transmission visibility[cite: 2]. I addressed this by structuring a dedicated confirmation frame on ID <code>0x037</code> accompanied by fixed retry windows[cite: 2].
+            Standard fire-and-forget topologies completely obscure dropped packets. Introducing an application-layer tracking ACK costs system bus bandwidth but provides direct transmission visibility. I addressed this by structuring a dedicated confirmation frame on ID <code>0x037</code> accompanied by fixed retry windows.
           </p>
         </div>
         <div class="challenge-card">
-          <div class="challenge-index">Challenge 03</div>[cite: 3]
-          <h3>Joystick drift and deadzone tuning</h3>[cite: 2]
+          <div class="challenge-index">Challenge 03</div>
+          <h3>Joystick drift and deadzone tuning</h3>
           <p>
-            Raw analog potentiometer readings exhibit persistent value drift around center coordinates, generating false direction transitions[cite: 2]. Expanding the deadzone improves center-state consistency but reduces control resolution[cite: 2]. Settled on a balanced <strong>500-unit deadzone threshold</strong> for practical module evaluations[cite: 2].
+            Raw analog potentiometer readings exhibit persistent value drift around center coordinates, generating false direction transitions. Expanding the deadzone improves center-state consistency but reduces control resolution. Settled on a balanced <strong>500-unit deadzone threshold</strong> for practical module evaluations.
           </p>
         </div>
         <div class="challenge-card">
-          <div class="challenge-index">Challenge 04</div>[cite: 3]
-          <h3>Transitioning prototypes into ROS 2</h3>[cite: 2]
+          <div class="challenge-index">Challenge 04</div>
+          <h3>Transitioning prototypes into ROS 2</h3>
           <p>
-            While CAN is optimized for immediate joint movements, complex behaviors require structured graph accessibility[cite: 2]. Implementing micro-ROS over serial links reduces firmware complexity compared to custom fragmentation logic but creates a dependency on an active host middleware agent[cite: 2]. Built the serial node first to clear basic execution criteria[cite: 2].
+            While CAN is optimized for immediate joint movements, complex behaviors require structured graph accessibility. Implementing micro-ROS over serial links reduces firmware complexity compared to custom fragmentation logic but creates a dependency on an active host middleware agent. Built the serial node first to clear basic execution criteria.
           </p>
         </div>
       </div>
@@ -645,44 +645,44 @@ rclc_publisher_init_default(
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       8. SKILLS & TECHNOLOGIES  (REQUIRED)[cite: 3]
+       8. SKILLS & TECHNOLOGIES  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="skills" aria-labelledby="skills-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="skills-heading">Technologies Used</h2>
-        <span class="count">— applied expertise</span>[cite: 2]
+        <span class="count">— applied expertise</span>
       </div>
       <div class="skills-grid fade-in delay-4">
-        <span class="skill featured">Embedded C++</span>[cite: 2]
-        <span class="skill featured">CAN 2.0B</span>[cite: 2]
-        <span class="skill featured">micro-ROS</span>[cite: 2]
-        <span class="skill featured">ROS 2 Jazzy</span>[cite: 2]
-        <span class="skill">PlatformIO</span>[cite: 2]
-        <span class="skill">Arduino Framework</span>[cite: 2]
-        <span class="skill">MCP2515 Controller</span>[cite: 2]
-        <span class="skill">SPI / UART Protocols</span>[cite: 2]
-        <span class="skill">SSD1306 OLED Interfacing</span>[cite: 2]
-        <span class="skill">Analog ADC Sampling</span>[cite: 2]
-        <span class="skill">Distributed Embedded Architecture</span>[cite: 2]
+        <span class="skill featured">Embedded C++</span>
+        <span class="skill featured">CAN 2.0B</span>
+        <span class="skill featured">micro-ROS</span>
+        <span class="skill featured">ROS 2 Jazzy</span>
+        <span class="skill">PlatformIO</span>
+        <span class="skill">Arduino Framework</span>
+        <span class="skill">MCP2515 Controller</span>
+        <span class="skill">SPI / UART Protocols</span>
+        <span class="skill">SSD1306 OLED Interfacing</span>
+        <span class="skill">Analog ADC Sampling</span>
+        <span class="skill">Distributed Embedded Architecture</span>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       9. BUILD & REPOSITORY  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       9. BUILD & REPOSITORY  (REQUIRED/OPTIONAL INTERSECTION)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="build" aria-labelledby="build-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="build-heading">Build and Run</h2>
-        <span class="count">— project reproduction</span>[cite: 2]
+        <span class="count">— project reproduction</span>
       </div>
 
       <div class="build-grid fade-in delay-4">
         <div class="build-card">
           <h3>CAN Bus Subsystem Compilation</h3>
-          <p>Requires an SPI interface connection link joining the host MCU and the MCP2515 driver board[cite: 2].</p>
+          <p>Requires an SPI interface connection link joining the host MCU and the MCP2515 driver board.</p>
           <table class="wire-table">
             <thead>
               <tr><th>Signal</th><th>ESP32 Pin</th><th>MCP2515 Pin</th></tr>
@@ -695,22 +695,22 @@ rclc_publisher_init_default(
               <tr><td>GND</td><td><code>GND</code></td><td>GND</td></tr>
               <tr><td>3.3V</td><td><code>3.3V</code></td><td>VCC</td></tr>
             </tbody>
-          </table>[cite: 2]
+          </table>
           <div class="code-block">
             <pre>cd can-bus/ESP_CAN_SEND
-platformio run --target upload[cite: 2]</pre>
+platformio run --target upload</pre>
           </div>
         </div>
 
         <div class="build-card">
           <h3>micro-ROS Node Initialization</h3>
-          <p>Deploys a serial transport link communication endpoint directly matching your local device mount parameters[cite: 2].</p>
+          <p>Deploys a serial transport link communication endpoint directly matching your local device mount parameters.</p>
           <div class="code-block">
-            <pre><span class="hl"># Compile and flash local node[cite: 2]</span>
+            <pre><span class="hl"># Compile and flash local node</span>
 cd microros
 platformio run --target upload
 
-<span class="hl"># Fire up the external broker agent[cite: 2]</span>
+<span class="hl"># Fire up the external broker agent</span>
 ros2 run micro_ros_agent micro_ros_agent \
   serial --dev /dev/ttyUSB0</pre>
           </div>
@@ -719,13 +719,13 @@ ros2 run micro_ros_agent micro_ros_agent \
 
       <pre class="file-tree"><span class="dir">webots-architecture/</span>
 ├── <span class="dir">can-bus/</span>
-│   ├── <span class="dir">ESP_CAN_SEND/</span>      <span class="note"># Joystick data processing and sender node source[cite: 2]</span>
-│   └── <span class="dir">ESP_CAN_RECV/</span>      <span class="note"># Display logic, target tracking, and ACK transceiver[cite: 2]</span>
+│   ├── <span class="dir">ESP_CAN_SEND/</span>      <span class="note"># Joystick data processing and sender node source</span>
+│   └── <span class="dir">ESP_CAN_RECV/</span>      <span class="note"># Display logic, target tracking, and ACK transceiver</span>
 └── <span class="dir">microros/</span>
-    └── <span class="dir">src/</span>               <span class="note"># Interactive publishers and subscriber routines[cite: 2]</span></pre>
+    └── <span class="dir">src/</span>               <span class="note"># Interactive publishers and subscriber routines</span></pre>
 
       <div class="code-block fade-in delay-5">
-        <pre><span class="hl"># Verify runtime topic routing[cite: 2]</span>
+        <pre><span class="hl"># Verify runtime topic routing</span>
 ros2 topic list
 ros2 topic echo /joystick_x_pub
 ros2 topic pub /led_control std_msgs/msg/String "{data: 'ON'}"</pre>
@@ -734,44 +734,44 @@ ros2 topic pub /led_control std_msgs/msg/String "{data: 'ON'}"</pre>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       10. STATUS & ROADMAP  (REQUIRED/OPTIONAL INTERSECTION)[cite: 3]
+       10. STATUS & ROADMAP  (REQUIRED/OPTIONAL INTERSECTION)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="roadmap" aria-labelledby="roadmap-heading">
     <div class="container">
       <div class="section-header fade-in delay-3">
         <h2 id="roadmap-heading">Status &amp; Roadmap</h2>
-        <span class="count">— future development</span>[cite: 2]
+        <span class="count">— future development</span>
       </div>
 
       <div class="status-grid fade-in delay-4">
         <div class="status-pane">
           <h4>Working Elements</h4>
           <ul>
-            <li>CAN sender runs telemetry conversion at 25 Hz loops[cite: 2]</li>
-            <li>Receiver decodes line signals and returns real-time ACKs[cite: 2]</li>
-            <li>OLED interface accurately renders active spatial directions[cite: 2]</li>
-            <li>micro-ROS link maintains serial connectivity with active agent[cite: 2]</li>
+            <li>CAN sender runs telemetry conversion at 25 Hz loops</li>
+            <li>Receiver decodes line signals and returns real-time ACKs</li>
+            <li>OLED interface accurately renders active spatial directions</li>
+            <li>micro-ROS link maintains serial connectivity with active agent</li>
           </ul>
         </div>
         <div class="status-pane limitations">
           <h4>Current Limitations</h4>
           <ul>
-            <li>Central diagnostics error reporting is not yet instantiated[cite: 2]</li>
-            <li>Deadzones map to experimental stick hardware instead of actuators[cite: 2]</li>
-            <li>Client nodes are fully structural but missing dynamic interaction loops[cite: 2]</li>
-            <li>Lacks custom multi-packet framing/reassembly capabilities[cite: 2]</li>
+            <li>Central diagnostics error reporting is not yet instantiated</li>
+            <li>Deadzones map to experimental stick hardware instead of actuators</li>
+            <li>Client nodes are fully structural but missing dynamic interaction loops</li>
+            <li>Lacks custom multi-packet framing/reassembly capabilities</li>
           </ul>
         </div>
       </div>
 
       <div class="problem-block fade-in delay-5" style="margin-top: 24px;">
-        <strong>Project Roadmap:</strong> Incorporate formal diagnostic error state counters covering delivery timeouts and frame check failures[cite: 2]. Fully map the <code>average4</code> service handling routines using clean ROSIDL compilation steps[cite: 2]. Construct a robust multi-packet assembly layer over standard CAN channels to fragment payloads exceeding 8 bytes[cite: 2]. Validate comprehensive stack reliability against custom layout PCBs under high physical motor brush loads[cite: 2].
+        <strong>Project Roadmap:</strong> Incorporate formal diagnostic error state counters covering delivery timeouts and frame check failures. Fully map the <code>average4</code> service handling routines using clean ROSIDL compilation steps. Construct a robust multi-packet assembly layer over standard CAN channels to fragment payloads exceeding 8 bytes. Validate comprehensive stack reliability against custom layout PCBs under high physical motor brush loads.
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       11. FOOTER CTA SECTION  (REQUIRED)[cite: 3]
+       11. FOOTER CTA SECTION  (REQUIRED)
        ═══════════════════════════════════════════════════════════════════ -->
   <section id="contact" class="cta-section" aria-labelledby="contact-heading">
     <div class="container">
@@ -796,7 +796,7 @@ ros2 topic pub /led_control std_msgs/msg/String "{data: 'ON'}"</pre>
 </main>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     12. HTML FOOTER  (REQUIRED)[cite: 3]
+     12. HTML FOOTER  (REQUIRED)
      ═══════════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
