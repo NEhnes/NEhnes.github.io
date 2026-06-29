@@ -156,8 +156,8 @@
   }
   .btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
   .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-  .btn-secondary { background: var(--p-btn-secondary-bg); color: var(--p-btn-secondary-fg); border-color: var(--p-btn-secondary-border); }
-  .btn-secondary:hover { background: var(--p-bg-alt); border-color: var(--p-primary); color: var(--p-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+  .btn-secondary { width: 18%; background: var(--p-btn-secondary-bg); color: var(--p-btn-secondary-fg); border-color: var(--p-btn-secondary-border); }
+  .btn-secondary:hover { width: 18%; background: var(--p-bg-alt); border-color: var(--p-primary); color: var(--p-primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 
   section { padding: 48px 0; }
   .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 28px; }
@@ -302,14 +302,15 @@
     background: var(--p-surface); border-radius: var(--radius-md);
     padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px; transition: all var(--transition);
   }
+
   .currently-card:hover { background: var(--p-bg-alt); box-shadow: var(--shadow-sm); }
 
   .currently-icon {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 44px; height: 44px; border-radius: 10px;
     background: var(--p-icon-bg); color: var(--p-icon-color);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px;
   }
-  .currently-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey-2); font-weight: 600; margin-bottom: 4px; }
+  .currently-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey-2); font-weight: 600; margin-bottom: 6px; }
   .currently-text { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
 
   .leadership-block {
@@ -362,7 +363,7 @@
       <div class="hero-meta fade-in delay-4">
         <span class="meta-item">
           <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          Embedded Systems · FPGA Design · AI Systems · Robotics
+          Embedded Systems · FPGA Design · Robotics
         </span>
       </div>
       <div class="hero-actions fade-in delay-5">
@@ -373,10 +374,6 @@
         <a class="btn btn-secondary" href="https://www.linkedin.com/in/nathan-ehnes-562b08363/" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
           LinkedIn
-        </a>
-        <a class="btn btn-primary" href="#">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Resume
         </a>
       </div>
     </div>
@@ -432,14 +429,15 @@
               <span class="project-arrow" aria-hidden="true">↗</span>
             </div>
             <p class="project-desc">
-              Zynq-7000 SoC-based digital guitar pedal with real-time modular DSP on FPGA fabric
-              and Linux-based control. Demonstrates hardware-software co-design: FPGA guarantees
-              sample-accurate 48 kHz audio processing independent of OS jitter.
+              • Zynq-7000 SoC: real-time DSP on FPGA fabric, system configuration using Linux PS on ARM cores<br>
+              • 48 kHz sample-accurate audio with hardware-guaranteed latency<br>
+              • AXI-Stream interconnects for modular effects chaining; reconfigurable in real-time
             </p>
             <div class="project-tags">
-              <span class="project-tag">Zynq SoC</span>
-              <span class="project-tag">C++</span>
-              <span class="project-tag">Real-time DSP</span>
+              <span class="project-tag">Zynq-7000 SoC</span>
+              <span class="project-tag">Vivado™</span>
+              <span class="project-tag">Verilog</span>
+              <span class="project-tag">Design Verification</span>
             </div>
           </div>
         </article>
@@ -458,12 +456,12 @@
               <span class="project-arrow" aria-hidden="true">↗</span>
             </div>
             <p class="project-desc">
-              Assumed leadership of communications subteam and onboarded new members.
-              Architected CAN Bus 2.0B backbone for distributed ESP32 sensor/motor control
-              and configured ROS2 Jazzy on WSL2 with kernel recompilation.
+              • Led communications subteam: architected CAN Bus 2.0B backbone for distributed control<br>
+              • Configured ROS2 Jazzy on WSL2 with custom kernel for real-time constraints<br>
+              • Mentored onboarding; improved team documentation and debugging workflows
             </p>
             <div class="project-tags">
-              <span class="project-tag">ROS2 Jazzy</span>
+              <span class="project-tag">ROS2</span>
               <span class="project-tag">CAN Bus 2.0B</span>
               <span class="project-tag">Leadership</span>
             </div>
@@ -484,13 +482,14 @@
               <span class="project-arrow" aria-hidden="true">↗</span>
             </div>
             <p class="project-desc">
-              Low-cost outdoor acoustic logger for biodiversity research. Captures month-long field deployments
-              on ~$77.50 unit cost. Custom firmware: I2S audio pipeline, duty-cycle scheduler, and MicroSD WAV writer.
+              • 1st place finish in university design competition
+              • Client centred design: developed alongside Western University professor for research use
+              • Custom I2S firmware: audio pipeline, duty-cycle scheduler, WAV writer to MicroSD<br>
             </p>
             <div class="project-tags">
               <span class="project-tag">ESP32</span>
               <span class="project-tag">C++</span>
-              <span class="project-tag">I2S / WAV</span>
+              <span class="project-tag">Audio Processing</span>
             </div>
           </div>
         </article>
@@ -509,13 +508,13 @@
               <span class="project-arrow" aria-hidden="true">↗</span>
             </div>
             <p class="project-desc">
-              WiFi-controlled autonomous rover with live SVGA video streaming and real-time asynchronous motor control
-              under severe bandwidth constraints. Decoupled async architecture achieves &lt;50 ms control latency.
+              • WiFi-controlled rover with live SVGA video streaming under bandwidth constraints<br>
+              • Decoupled async architecture: &lt;50 ms control latency despite Wi-Fi bottlenecks<br>
+              • Real-time motor control independent of video processing thread
             </p>
             <div class="project-tags">
-              <span class="project-tag">ESP32</span>
-              <span class="project-tag">C++</span>
-              <span class="project-tag">Real-time</span>
+              <span class="project-tag">Wireless Protocols</span>
+              <span class="project-tag">Adaptive Streaming</span>
             </div>
           </div>
         </article>
@@ -532,31 +531,31 @@
       </div>
       <div class="currently-grid fade-in delay-5">
         <div class="currently-card">
-          <div class="currently-icon" aria-hidden="true">⌬</div>
+          <div class="currently-icon" aria-hidden="true">⛭</div>
           <div>
             <div class="currently-label">Role</div>
-            <div class="currently-text">Engineering co-op — hardware & embedded systems</div>
+            <div class="currently-text">Engineering co-op: automation & quality engineering</div>
           </div>
         </div>
         <div class="currently-card">
-          <div class="currently-icon" aria-hidden="true">⚙</div>
+          <div class="currently-icon" aria-hidden="true">🛠</div>
           <div>
             <div class="currently-label">Building</div>
-            <div class="currently-text">A humanoid robotics platform with custom PCBs and ROS2</div>
+            <div class="currently-text">All-in-one DSP guitar effects platform with Zynq-7000</div>
           </div>
         </div>
         <div class="currently-card">
           <div class="currently-icon" aria-hidden="true">◐</div>
           <div>
             <div class="currently-label">Learning</div>
-            <div class="currently-text">RTOS internals, motor control theory, and PCB RF basics</div>
+            <div class="currently-text">SoC PL/PS programming with AMD Vivado™ Design Suite</div>
           </div>
         </div>
         <div class="currently-card">
-          <div class="currently-icon" aria-hidden="true">→</div>
+          <div class="currently-icon" aria-hidden="true">↪</div>
           <div>
             <div class="currently-label">Looking for</div>
-            <div class="currently-text">Hardware / embedded / R&D co-op or new-grad roles</div>
+            <div class="currently-text">Summer 2027 hardware & embedded co-op roles</div>
           </div>
         </div>
       </div>
@@ -578,7 +577,7 @@
   <section id="contact" class="cta-section" aria-labelledby="contact-heading">
     <div class="container">
       <h2 id="contact-heading" class="cta-title fade-in delay-6">Let's build something real.</h2>
-      <p class="cta-sub fade-in delay-6">Open to hardware, embedded, and R&D conversations. Best reached by email — happy to share a portfolio or schedule a call.</p>
+      <p class="cta-sub fade-in delay-6">Open to hardware, embedded, and R&D conversations. Best reached by email — also happy to schedule a call</p>
       <div class="cta-buttons fade-in delay-6">
         <a href="mailto:nathanehnes@gmail.com" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -595,14 +594,14 @@
 
 <footer>
   <div class="container">
-    <p>Built with HTML, CSS, caffeine, and occasional FPGA synthesis failures.</p>
+    <p>- - -</p>
   </div>
 </footer>
 
 <script>
   // ─── ROTATING SKILL TAG ─────────────────────────────────────────
   (function () {
-    const tags = ["RTOS internals","motor control","PCB layout","TinyML","sensor fusion","ROS2 nav"];
+    const tags = ["RTOS systems","CAN bus","FPGA synthesis","design verification"];
     const el = document.getElementById("rotatingTag");
     if (!el) return;
     let i = 0;
