@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FPGA Effects Pedal — a real-time, parameterized audio DSP platform built on the Xilinx Zynq-7000 and Verilog." />
+  <title>FPGA Effects Pedal — Real-Time Audio DSP on Zynq</title>
+  <style>
+    :root {
+      --p-primary: #d98f00;
+      --p-primary-alt: #c28000;
+      --p-primary-soft: #6b4600;
+      --p-secondary: #8a8a8a;
+      --p-secondary-lt: #6a6a6a;
+      --p-bg: #2a2a2a;
+      --p-bg-alt: #333333;
+      --p-surface: #383838;
+      --p-ink: #f0f0f0;
+      --p-ink-soft: #c8c8c8;
+      --p-border: rgba(240,240,240,.08);
+      --p-border-pill: rgba(240,240,240,.14);
+      --p-tag-bg: rgba(217,143,0,.12);
+      --p-tag-color: #eb9b00;
+      --p-badge-bg: rgba(217,143,0,.15);
+      --p-badge-color: #ffb700;
+      --p-card-bg: #333333;
+      --p-btn-primary-bg: #d98f00;
+      --p-btn-primary-fg: #1a1a1a;
+      --p-btn-secondary-bg: #383838;
+      --p-btn-secondary-fg: #f0f0f0;
+      --p-btn-secondary-border: rgba(240,240,240,.18);
+      --p-punchline: #d98f00;
+      --p-gold: #eec945;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,.16);
+      --shadow-md: 0 8px 24px rgba(0,0,0,.22);
+      --shadow-lg: 0 18px 46px rgba(0,0,0,.28);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --transition: .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--p-bg); color: var(--p-ink); font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: inherit; }
+    .container { max-width: 1080px; margin: auto; padding: 0 24px; }
+    .fade-in { animation: rise .7s ease both; }
+    .delay-1 { animation-delay: .1s; } .delay-2 { animation-delay: .2s; } .delay-3 { animation-delay: .3s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { .fade-in { animation: none; } html { scroll-behavior: auto; } }
+
+    header { border-bottom: 1px solid var(--p-border); background: rgba(42,42,42,.92); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); }
+    nav { min-height: 68px; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+    .logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; letter-spacing: -.02em; }
+    .logo-mark { display: grid; place-items: center; width: 32px; height: 32px; color: #1a1a1a; background: linear-gradient(135deg, #f2bc32, var(--p-primary)); border-radius: 9px; font-size: 12px; }
+    .nav-links { display: flex; list-style: none; gap: 22px; color: var(--p-secondary); font-size: 14px; }
+    .nav-links a { text-decoration: none; transition: color var(--transition); }
+    .nav-links a:hover { color: var(--p-primary); }
+
+    .hero { padding: 92px 0 76px; background: radial-gradient(circle at 84% 18%, rgba(217,143,0,.13), transparent 32%), var(--p-bg); }
+    .eyebrow { color: var(--p-badge-color); font-size: 12px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; margin-bottom: 18px; }
+    h1 { max-width: 820px; font-size: clamp(2.8rem, 7vw, 5.8rem); line-height: .98; letter-spacing: -.065em; font-weight: 650; }
+    .hero h1 span { color: var(--p-primary); }
+    .hero-lede { max-width: 720px; margin: 26px 0 30px; color: var(--p-ink-soft); font-size: clamp(1.08rem, 2vw, 1.3rem); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 42px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; border-radius: var(--radius-sm); padding: 11px 18px; text-decoration: none; font-weight: 700; font-size: 14px; transition: all var(--transition); }
+    .btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
+    .btn-secondary { background: var(--p-btn-secondary-bg); border-color: var(--p-btn-secondary-border); }
+    .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .btn-primary:hover { background: #f1a40d; } .btn-secondary:hover { border-color: var(--p-primary); color: var(--p-primary); }
+    .hero-metrics { display: grid; grid-template-columns: repeat(4, 1fr); max-width: 760px; border-top: 1px solid var(--p-border); padding-top: 22px; gap: 20px; }
+    .metric strong { display: block; color: var(--p-primary); font-size: 1.65rem; line-height: 1.1; } .metric small { color: var(--p-secondary); font-size: 12px; }
+
+    section { padding: 76px 0; }
+    .section-kicker { color: var(--p-primary); font-size: 12px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; margin-bottom: 10px; }
+    h2 { font-size: clamp(1.8rem, 4vw, 2.55rem); letter-spacing: -.045em; line-height: 1.1; margin-bottom: 16px; }
+    h3 { font-size: 1.1rem; line-height: 1.25; margin-bottom: 8px; }
+    .section-intro { max-width: 720px; color: var(--p-ink-soft); }
+    .problem { background: var(--p-bg-alt); }
+    .problem-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 54px; align-items: center; }
+    .problem-copy p + p { margin-top: 16px; }
+    .callout { border-left: 3px solid var(--p-primary); background: rgba(217,143,0,.08); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 24px; color: var(--p-ink-soft); }
+    .callout strong { display: block; color: var(--p-ink); font-size: 1.15rem; margin-bottom: 8px; }
+
+    .architecture { margin-top: 38px; border: 1px solid var(--p-border); border-radius: var(--radius-lg); padding: 26px; background: var(--p-card-bg); box-shadow: var(--shadow-md); }
+    .architecture-label { color: var(--p-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 17px; }
+    .signal-chain { display: flex; align-items: stretch; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+    .signal-node { min-width: 112px; flex: 1; border: 1px solid rgba(217,143,0,.32); background: rgba(217,143,0,.09); border-radius: 12px; padding: 15px 10px; text-align: center; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .signal-node.io { border-color: rgba(240,240,240,.15); background: var(--p-surface); } .arrow { align-self: center; color: var(--p-primary); font-size: 20px; }
+    .domain-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+    .domain { border-radius: 12px; padding: 15px 17px; background: var(--p-surface); border: 1px solid var(--p-border); color: var(--p-ink-soft); font-size: 13px; }
+    .domain strong { display: block; color: var(--p-ink); margin-bottom: 3px; }
+
+    .results-grid, .challenge-grid, .stack-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 34px; }
+    .card { background: var(--p-card-bg); border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 24px; transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition); }
+    .card:hover { transform: translateY(-3px); border-color: rgba(217,143,0,.4); box-shadow: var(--shadow-md); }
+    .card-number { color: var(--p-primary); font-size: 12px; font-weight: 800; letter-spacing: .1em; margin-bottom: 13px; }
+    .card p, .stack-item p { color: var(--p-ink-soft); font-size: 14px; }
+    .challenge-grid .card { border-top: 3px solid var(--p-primary); }
+    .challenge-grid .card strong { color: var(--p-primary); }
+
+    .technical { background: var(--p-bg-alt); }
+    .tech-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 40px; margin-top: 36px; }
+    .tech-list { list-style: none; display: grid; gap: 12px; }
+    .tech-list li { background: var(--p-card-bg); border: 1px solid var(--p-border); padding: 15px 17px; border-radius: 12px; color: var(--p-ink-soft); font-size: 14px; }
+    .tech-list strong { display: block; color: var(--p-ink); margin-bottom: 2px; }
+    pre { background: #202020; border: 1px solid var(--p-border); border-radius: var(--radius-md); padding: 23px; overflow-x: auto; color: #f5c45a; font: 13px/1.7 "SFMono-Regular", Consolas, monospace; box-shadow: var(--shadow-sm); }
+    .code-caption { color: var(--p-secondary); font-size: 12px; margin-top: 10px; }
+
+    .skills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .skill { border: 1px solid var(--p-border-pill); background: var(--p-tag-bg); border-radius: 999px; color: var(--p-tag-color); padding: 8px 14px; font-size: 13px; font-weight: 600; }
+    .skill.featured { background: var(--p-primary); color: #1a1a1a; border-color: var(--p-primary); }
+    .status { margin-top: 34px; padding: 18px 20px; border-radius: var(--radius-md); background: rgba(238,201,69,.08); border: 1px solid rgba(238,201,69,.2); color: var(--p-ink-soft); font-size: 14px; }
+    .status strong { color: var(--p-gold); }
+    footer { border-top: 1px solid var(--p-border); padding: 34px 0 42px; color: var(--p-secondary); font-size: 13px; }
+    footer .footer-inner { display: flex; justify-content: space-between; gap: 20px; align-items: center; } footer a { color: var(--p-primary); text-decoration: none; }
+    @media (max-width: 760px) { .nav-links { display: none; } .hero { padding-top: 62px; } .hero-metrics { grid-template-columns: repeat(2, 1fr); } .problem-grid, .tech-layout, .results-grid, .challenge-grid, .stack-grid { grid-template-columns: 1fr; } .domain-row { grid-template-columns: 1fr; } section { padding: 58px 0; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav aria-label="Project navigation">
+        <a class="logo" href="../index.html"><span class="logo-mark">NE</span><span>Nathan Ehnes / Project Lab</span></a>
+        <ul class="nav-links">
+          <li><a href="#architecture">Architecture</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#technical">Technical depth</a></li>
+          <li><a href="https://github.com/nehnes/fpga-effects-pedal">GitHub ↗</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="eyebrow fade-in">FPGA / Real-time DSP / Verilog RTL</div>
+        <h1 class="fade-in delay-1">A complete audio effects platform in <span>programmable logic.</span></h1>
+        <p class="hero-lede fade-in delay-2">A parameterized guitar effects pedal that combines deterministic AXI-Stream DSP, fixed-point signal processing, and a Linux-controlled Zynq-7000 system-on-chip.</p>
+        <div class="hero-actions fade-in delay-3">
+          <a class="btn btn-primary" href="https://github.com/nehnes/fpga-effects-pedal">View source on GitHub ↗</a>
+          <a class="btn btn-secondary" href="#technical">Explore the implementation ↓</a>
+        </div>
+        <div class="hero-metrics fade-in delay-3" aria-label="Project metrics">
+          <div class="metric"><strong>7</strong><small>real-time effects</small></div>
+          <div class="metric"><strong>44.1 kHz</strong><small>audio sample rate</small></div>
+          <div class="metric"><strong>100 MHz</strong><small>programmable-logic clock</small></div>
+          <div class="metric"><strong>~2 cycles</strong><small>hot-swap overhead</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="problem">
+      <div class="container problem-grid">
+        <div class="problem-copy">
+          <div class="section-kicker">01 / The engineering problem</div>
+          <h2>Real-time audio needs predictable behavior.</h2>
+          <p class="section-intro">Software effects can be flexible, but their scheduling and buffering introduce latency and make timing less deterministic. Commercial hardware pedals, meanwhile, are often fixed-function and difficult to reconfigure.</p>
+          <p class="section-intro">This project moves the signal path into FPGA fabric: every sample is processed synchronously, effect modules are independently parameterized, and the chain can be rerouted without physically rewiring the system.</p>
+        </div>
+        <div class="callout">
+          <strong>Recruiter takeaway</strong>
+          The design demonstrates hardware/software co-design rather than an isolated RTL block: audio enters through I²S, crosses a deterministic PL pipeline, and is controlled by an ARM/Linux interface over AXI.
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="container">
+        <div class="section-kicker">02 / System architecture</div>
+        <h2>Two domains. One deterministic signal path.</h2>
+        <p class="section-intro">The programmable logic owns the time-critical work. The ARM processing system handles configuration and user interaction without sitting in the audio loop.</p>
+        <figure class="architecture fade-in delay-1">
+          <div class="architecture-label">Physical and logical audio flow</div>
+          <div class="signal-chain" aria-label="Audio signal chain diagram">
+            <div class="signal-node io">I²S<br>ADC</div><div class="arrow">→</div>
+            <div class="signal-node">6-band<br>EQ</div><div class="arrow">→</div>
+            <div class="signal-node">Distortion<br>+ Fuzz</div><div class="arrow">→</div>
+            <div class="signal-node">Delay</div><div class="arrow">→</div>
+            <div class="signal-node">Phaser<br>+ Chorus</div><div class="arrow">→</div>
+            <div class="signal-node">Noise<br>Gate</div><div class="arrow">→</div>
+            <div class="signal-node io">I²S<br>DAC</div>
+          </div>
+          <div class="domain-row">
+            <div class="domain"><strong>PL / real-time path</strong> AXI-Stream samples, synchronous DSP, direct backpressure, fixed-point arithmetic, and BRAM-backed delay.</div>
+            <div class="domain"><strong>PS / control path</strong> Petalinux on dual-core ARM Cortex-A9; AXI-Lite register writes for parameters, chain state, and presets.</div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section id="results" class="technical">
+      <div class="container">
+        <div class="section-kicker">03 / Delivered capability</div>
+        <h2>What the platform already proves.</h2>
+        <p class="section-intro">The core DSP pipeline is complete, with system control and post-synthesis profiling continuing as the project moves toward hardware validation.</p>
+        <div class="results-grid">
+          <article class="card"><div class="card-number">CAPABILITY 01</div><h3>Seven effects in one chain</h3><p>EQ, distortion, fuzz, delay, phaser, chorus, and noise gate modules are synthesized for real-time operation on the Zynq-7000 SoC.</p></article>
+          <article class="card"><div class="card-number">CAPABILITY 02</div><h3>Hot-swappable routing</h3><p>A crossbar and MUX-based routing layer switches the active effect path on a clock boundary while allowing in-flight samples to complete safely.</p></article>
+          <article class="card"><div class="card-number">CAPABILITY 03</div><h3>16 / 20 / 24-bit parameterization</h3><p>Arithmetic modules accept a configurable sample width, making fidelity-versus-resource tradeoffs measurable instead of hard-coded.</p></article>
+          <article class="card"><div class="card-number">CAPABILITY 04</div><h3>Hardware/software integration</h3><p>Linux-side control is exposed through memory-mapped AXI-Lite registers, separating low-frequency configuration from the deterministic sample path.</p></article>
+        </div>
+        <div class="status"><strong>Current status:</strong> Core DSP pipeline complete; hot-swap testing, resource-utilization tables, end-to-end latency measurement, and Linux parameter UI are in progress.</div>
+      </div>
+    </section>
+
+    <section id="technical">
+      <div class="container">
+        <div class="section-kicker">04 / Technical depth</div>
+        <h2>Design choices that matter in hardware.</h2>
+        <div class="tech-layout">
+          <ul class="tech-list">
+            <li><strong>Cycle-by-cycle AXI-Stream</strong> Direct tvalid/tready coupling propagates backpressure through the chain without inserting a FIFO between every effect.</li>
+            <li><strong>Extended-precision arithmetic</strong> Intermediate values use WIDTH + 16 bits before rounding, truncation, and final saturation.</li>
+            <li><strong>Stable fixed-point DSP</strong> Gain uses Q2.13, thresholds use Q0.15, and biquad filters use a cascaded direct-form-II topology.</li>
+            <li><strong>Clock-domain discipline</strong> I²S sample-rate signals cross into the PL domain through synchronizer chains; AXI-Lite writes remain in the 100 MHz control domain.</li>
+          </ul>
+          <div>
+            <pre><code>// Direct backpressure coupling
+assign i_tready = o_tready;
+assign o_tvalid = i_tvalid;
+
+// Extended precision before saturation
+wire signed [WIDTH+15:0] temp;
+// round → truncate → clamp to WIDTH bits</code></pre>
+            <p class="code-caption">Representative RTL pattern: deterministic flow control and bounded numeric behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="technical">
+      <div class="container">
+        <div class="section-kicker">05 / Verification mindset</div>
+        <h2>Designed to be measured, not just demonstrated.</h2>
+        <div class="challenge-grid">
+          <article class="card"><h3><strong>Fixed-point correctness</strong></h3><p>Amplitude and frequency sweeps, clipping boundaries, coefficient checks, and golden MATLAB comparisons validate the DSP math.</p></article>
+          <article class="card"><h3><strong>Protocol behavior</strong></h3><p>Dedicated Verilog testbenches exercise tvalid/tready toggling and verify that stalls propagate without dropping or duplicating samples.</p></article>
+          <article class="card"><h3><strong>Timing closure</strong></h3><p>Vivado synthesis and implementation target a 100 MHz PL clock, with timing summaries and post-synthesis checks used to close the design.</p></article>
+          <article class="card"><h3><strong>Hardware observability</strong></h3><p>A planned ILA integration will inspect stream handshakes, sample data, and parameter transitions on the deployed signal path.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-kicker">06 / Technologies used</div>
+        <h2>A stack spanning RTL to user control.</h2>
+        <div class="skills" aria-label="Technologies and skills">
+          <span class="skill featured">Verilog RTL</span><span class="skill featured">AXI-Stream</span><span class="skill featured">Xilinx Zynq-7000</span><span class="skill">Digital signal processing</span><span class="skill">Fixed-point arithmetic</span><span class="skill">I²S / I²C</span><span class="skill">AXI-Lite</span><span class="skill">Vivado</span><span class="skill">Icarus Verilog</span><span class="skill">MATLAB</span><span class="skill">Petalinux / Linux</span><span class="skill">GTKWave</span><span class="skill">Timing closure</span><span class="skill">RTL verification</span>
+        </div>
+        <div class="hero-actions" style="margin-top: 34px; margin-bottom: 0;">
+          <a class="btn btn-primary" href="https://github.com/nehnes/fpga-effects-pedal">Read the repository ↗</a>
+          <a class="btn btn-secondary" href="../index.html">Back to portfolio</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner"><span>FPGA Effects Pedal · Ongoing project · 2026</span><a href="https://github.com/nehnes/fpga-effects-pedal">github.com/nehnes/fpga-effects-pedal ↗</a></div>
+  </footer>
+</body>
+</html>

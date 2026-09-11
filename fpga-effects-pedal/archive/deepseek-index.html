@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FPGA Effects Pedal — Technical Deep-Dive · Nathan Ehnes</title>
+<meta name="description" content="FPGA guitar effects pedal on a Zynq-7000 SoC: 7 real-time DSP effects in hand-coded Verilog, AXI-Stream backpressure, parameterized fixed-point arithmetic, hot-swappable chain, and ~2-4 µs estimated latency." />
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   MODERN DOLCH DARK — GOLD VARIANT
+   Primary accent:   #d98f00  gold  — buttons, active tags, headings
+   Secondary accent: #c86428  amber — left-bar card reveals, borders
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* PRIMARY GOLD ACCENT */
+  --p-primary:          #d98f00;
+  --p-primary-alt:      #c28000;
+  --p-primary-soft:     #6b4600;
+
+  /* SECONDARY ACCENT */
+  --p-secondary-accent: #c86428;
+
+  /* NEUTRALS */
+  --p-secondary:        #8a8a8a;
+  --p-secondary-lt:     #6a6a6a;
+
+  /* BACKGROUNDS  (dark → mid → light surface) */
+  --p-bg:               #2a2a2a;
+  --p-bg-alt:           #333333;
+  --p-surface:          #383838;
+
+  /* TEXT */
+  --p-ink:              #f0f0f0;
+  --p-ink-soft:         #c8c8c8;
+
+  /* BORDERS */
+  --p-border:           rgba(240,240,240,0.07);
+  --p-border-pill:      rgba(240,240,240,0.09);
+
+  /* COMPONENT TOKENS */
+  --p-tag-bg:           rgba(217,143,0,0.12);
+  --p-tag-color:        #eb9b00;
+  --p-badge-bg:         rgba(217,143,0,0.15);
+  --p-badge-color:      #ffb700;
+  --p-icon-bg:          rgba(217,143,0,0.13);
+  --p-icon-color:       #d98f00;
+  --p-card-bg:          #333333;
+  --p-gold:             #eec945;
+  --p-left-bar:         #ff5068;
+  --p-footer-border:    rgba(240,240,240,0.07);
+
+  /* BUTTONS */
+  --p-btn-primary-bg:        #d98f00;
+  --p-btn-primary-fg:        #1a1a1a;
+  --p-btn-secondary-bg:      #383838;
+  --p-btn-secondary-fg:      #f0f0f0;
+  --p-btn-secondary-border:  rgba(240,240,240,0.18);
+
+  /* TYPOGRAPHIC ACCENTS */
+  --p-punchline:        #d98f00;
+  --p-nav-hover:        #d98f00;
+
+  /* ALIASES */
+  --green-1:  var(--p-primary-alt);
+  --green-2:  var(--p-primary);
+  --grey-1:   var(--p-secondary);
+  --grey-2:   var(--p-secondary-lt);
+  --ink:      var(--p-ink);
+  --ink-soft: var(--p-ink-soft);
+
+  /* SHADOWS */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
+
+  /* SHAPE */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter",
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--p-bg);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body, .skill, .impl-card, .challenge-card, .metric-card, .arch-card,
+.overview-card, .build-card, .btn, header, footer, nav,
+.logo, .logo-mark, h1, h2, h3 {
+  transition-property: background-color, color, border-color, box-shadow;
+  transition-duration: 0.4s;
+  transition-timing-function: ease;
+}
+
+/* ─── LAYOUT ─────────────────────────────────────────────────────── */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── ANIMATION ──────────────────────────────────────────────────── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease-out forwards;
+}
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+.delay-1 { animation-delay: 0.10s; }
+.delay-2 { animation-delay: 0.25s; }
+.delay-3 { animation-delay: 0.40s; }
+.delay-4 { animation-delay: 0.55s; }
+.delay-5 { animation-delay: 0.70s; }
+.delay-6 { animation-delay: 0.85s; }
+@media (prefers-reduced-motion: reduce) {
+  .fade-in { opacity: 1; transform: none; animation: none; }
+}
+
+/* ─── TYPOGRAPHY ─────────────────────────────────────────────────── */
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+p { color: var(--ink-soft); line-height: 1.7; }
+
+:not(pre) > code {
+  background: var(--p-surface);
+  color: var(--p-tag-color);
+  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+pre {
+  background: var(--p-bg-alt);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+pre code { background: transparent; color: inherit; padding: 0; font-family: inherit; }
+.hl { color: var(--p-tag-color); }
+.dim { color: var(--grey-2); }
+
+/* ─── SECTION CHROME ─────────────────────────────────────────────── */
+section { padding: 54px 0; }
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.section-header .count { color: var(--grey-2); font-size: 0.9rem; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   HEADER & NAV
+   ═══════════════════════════════════════════════════════════════════ */
+header { padding: 28px 0 12px; }
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--green-1), var(--green-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--p-btn-primary-fg);
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-links { display: flex; gap: 24px; list-style: none; flex-wrap: wrap; }
+.nav-links a {
+  color: var(--grey-1);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color var(--transition);
+}
+.nav-links a:hover { color: var(--p-nav-hover); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition);
+}
+.btn-primary { background: var(--p-btn-primary-bg); color: var(--p-btn-primary-fg); }
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.btn-secondary {
+  background: var(--p-btn-secondary-bg);
+  color: var(--p-btn-secondary-fg);
+  border-color: var(--p-btn-secondary-border);
+}
+.btn-secondary:hover {
+  background: var(--p-bg-alt);
+  border-color: var(--p-primary);
+  color: var(--p-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════════ */
+.hero {
+  padding: 72px 0 64px;
+  background: var(--p-bg);
+  position: relative;
+}
+.hero { background: linear-gradient(180deg, #242424 0%, var(--p-bg) 100%); }
+
+.hero-eyebrow {
+  display: inline-block;
+  background: var(--p-badge-bg);
+  color: var(--p-badge-color);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.hero-title {
+  font-size: clamp(2.1rem, 5vw, 3.25rem);
+  line-height: 1.05;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.hero-punchline {
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  font-weight: 400;
+  color: var(--p-punchline);
+  letter-spacing: -0.01em;
+  max-width: 720px;
+  margin-bottom: 14px;
+}
+
+.hero-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 28px; }
+.meta-item { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+.meta-icon { width: 16px; height: 16px; color: var(--green-2); }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO VISUAL / SIGNAL CHAIN PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+.hero-visual {
+  margin-top: 34px;
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-lg);
+  background: var(--p-bg-alt);
+  padding: 24px;
+}
+
+.chain-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+}
+.chain-node {
+  background: var(--p-surface);
+  border: 1px solid var(--p-border-pill);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.chain-node small { display: block; color: var(--grey-2); font-size: 10.5px; margin-top: 2px; }
+.chain-node.gold {
+  background: var(--p-primary);
+  color: var(--p-btn-primary-fg);
+}
+.chain-node.gold small { color: rgba(26,26,26,0.72); }
+.chain-arrow { color: var(--grey-2); font-size: 14px; margin: 0 6px; }
+
+.visual-specs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+@media (max-width: 720px) {
+  .visual-specs { grid-template-columns: repeat(2, 1fr); }
+}
+.spec-pill {
+  background: var(--p-bg);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+}
+.spec-pill strong { display: block; color: var(--grey-2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.spec-pill span { display: block; color: var(--ink); font-size: 13.5px; font-weight: 600; margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PROBLEM
+   ═══════════════════════════════════════════════════════════════════ */
+.problem-block { max-width: 780px; }
+.problem-block p { margin-bottom: 16px; }
+.problem-block .lead {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARD GRIDS (shared)
+   ═══════════════════════════════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 640px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+@media (min-width: 641px) {
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 641px) and (max-width: 900px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.card {
+  background: var(--p-card-bg);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.card::after {
+  content: "";
+  position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--p-left-bar);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--transition);
+  z-index: 10;
+}
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); background: var(--p-bg-alt); }
+.card:hover::after { transform: scaleY(1); }
+.card::before {
+  content: "";
+  position: absolute; top: -1px; right: -1px;
+  width: 22px; height: 22px;
+  border-top: 2px solid var(--p-primary);
+  border-right: 2px solid var(--p-primary);
+  border-top-right-radius: var(--radius-md);
+  opacity: 0.35;
+  transition: all var(--transition);
+  z-index: 10;
+}
+.card:hover::before { width: 34px; height: 34px; opacity: 1; }
+
+.card h3 { font-size: 1.02rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 8px; }
+.card p { font-size: 14.5px; line-height: 1.65; }
+.card .tagline { color: var(--grey-2); font-size: 12.5px; margin-bottom: 10px; }
+
+/* ─── Metric cards ───────────────────────────────────────────────── */
+.metric-card { padding: 22px; }
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--p-primary);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.metric-card .metric-label {
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+.metric-card small { color: var(--grey-2); font-size: 12px; display: block; margin-top: 6px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ARCHITECTURE
+   ═══════════════════════════════════════════════════════════════════ */
+.arch-card { padding: 20px 22px; }
+.arch-card .arch-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--p-icon-bg);
+  color: var(--p-icon-color);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+}
+.arch-card .arch-num {
+  position: absolute; top: 14px; right: 16px;
+  color: var(--grey-2); font-size: 12px; font-weight: 600;
+}
+
+.block {
+  background: var(--p-bg-alt);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  overflow-x: auto;
+  white-space: pre;
+}
+.block .k { color: var(--p-tag-color); }
+.block .c { color: var(--grey-2); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DSP LIBRARY CARDS
+   ═══════════════════════════════════════════════════════════════════ */
+.dsp-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.dsp-pill {
+  background: var(--p-tag-bg);
+  color: var(--p-tag-color);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--p-border-pill);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHALLENGES
+   ═══════════════════════════════════════════════════════════════════ */
+.challenge-card { padding: 20px 22px; }
+.challenge-index {
+  display: inline-block;
+  background: var(--p-icon-bg);
+  color: var(--p-icon-color);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.challenge-card .tbl { margin-top: 12px; }
+.challenge-card .tbl-row { display: flex; gap: 10px; align-items: flex-start; }
+.challenge-card .tbl-row .k { color: var(--grey-2); font-size: 12px; font-weight: 600; min-width: 84px; }
+.challenge-card .tbl-row .v { color: var(--ink-soft); font-size: 13.5px; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEST & VERIFICATION
+   ═══════════════════════════════════════════════════════════════════ */
+.test-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 720px) { .test-grid { grid-template-columns: repeat(2, 1fr); } }
+.test-check {
+  background: var(--p-bg-alt);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.test-check svg { width: 14px; height: 14px; color: var(--p-primary); flex-shrink: 0; }
+.test-check span { color: var(--ink-soft); font-size: 13.5px; }
+
+/* ─── Skills ─────────────────────────────────────────────────────── */
+.skills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.skill {
+  background: var(--p-tag-bg);
+  color: var(--p-tag-color);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--p-border-pill);
+  cursor: default;
+  transition: all var(--transition);
+}
+.skill:hover {
+  background: var(--p-primary);
+  color: var(--p-btn-primary-fg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--p-primary);
+}
+.skill.featured { background: var(--p-primary); color: var(--p-btn-primary-fg); border-color: var(--p-primary); }
+.skill.featured::before { content: "★ "; }
+
+/* ─── Build code blocks ───────────────────────────────────────────── */
+.code-block {
+  background: var(--p-bg-alt);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  overflow-x: auto;
+}
+.code-block .hl { color: var(--p-tag-color); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CTA + FOOTER
+   ═══════════════════════════════════════════════════════════════════ */
+.cta-section { background: var(--p-bg-alt); }
+.cta-title { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 14px; }
+.cta-sub { max-width: 640px; margin-bottom: 26px; }
+.cta-buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+
+footer { border-top: 1px solid var(--p-footer-border); padding: 30px 0 40px; }
+footer p { color: var(--grey-1); font-size: 14px; line-height: 1.7; }
+footer a { color: var(--p-primary); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     1. HEADER / NAV
+     ═══════════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="container fade-in delay-1">
+    <nav aria-label="Primary navigation">
+      <a href="../../index.html" class="logo" aria-label="Back to home">
+        <span class="logo-mark" aria-hidden="true">NE</span>
+        <span>NATHAN EHNES</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#latency">Latency</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#dsp">DSP Library</a></li>
+        <li><a href="#fixed-point">Fixed-Point</a></li>
+        <li><a href="#challenges">Challenges</a></li>
+        <li><a href="#verification">Test</a></li>
+        <li><a href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener">GitHub ↗</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     2. HERO
+     ═══════════════════════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container hero-inner">
+
+    <div class="hero-eyebrow fade-in delay-2">
+      Hardware Deep-Dive · Solo Project · In Development
+    </div>
+
+    <h1 class="hero-title fade-in delay-2">FPGA Effects Pedal</h1>
+
+    <p class="hero-punchline fade-in delay-3">
+      7 real-time audio effects synthesized onto a Zynq-7000 SoC — hand-coded Verilog DSP, cycle-by-cycle AXI-Stream flow control, and parameterized fixed-point math.
+    </p>
+
+    <div class="hero-meta fade-in delay-4">
+      <span class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Solo Project
+      </span>
+
+      <span class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+          <rect x="9" y="9" width="6" height="6"/>
+          <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
+        </svg>
+        Verilog · AXI-Stream · I²S
+      </span>
+
+      <span class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+        44.1 kHz · 100 MHz PL Clock
+      </span>
+
+      <span class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polygon points="2 2 22 22 2 22"/>
+          <polyline points="2 16 14 6"/>
+        </svg>
+        16 / 20 / 24-bit Parameterized
+      </span>
+    </div>
+
+    <div class="hero-actions fade-in delay-5">
+      <a class="btn btn-primary" href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+        </svg>
+        View Repository
+      </a>
+      <a class="btn btn-secondary" href="#architecture">Explore Architecture</a>
+    </div>
+
+    <figure class="hero-visual fade-in delay-6" aria-label="Seven-stage audio effect chain routed through the Zynq-7000 programmable logic fabric">
+      <div class="chain-row" role="img" aria-label="Processing chain: EQ, Distortion, Fuzz, Delay, Phaser, Chorus, Noise Gate">
+        <div class="chain-node gold">Audio In<small>I²S · ADC</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">EQ<small>biquad ×6</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Distortion<small>hard clip</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Fuzz<small>clip + gain</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Delay<small>FIFO · BRAM</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Phaser<small>all-pass + LFO</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Chorus<small>mod. delay</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node">Noise Gate<small>threshold</small></div>
+        <span class="chain-arrow" aria-hidden="true">▶</span>
+        <div class="chain-node gold">Audio Out<small>I²S · DAC</small></div>
+      </div>
+      <div class="visual-specs">
+        <div class="spec-pill"><strong>Sample Rate</strong><span>44.1 kHz</span></div>
+        <div class="spec-pill"><strong>PL Clock</strong><span>100 MHz</span></div>
+        <div class="spec-pill"><strong>Fabric</strong><span>53,200 LUT · 220 DSP48</span></div>
+        <div class="spec-pill"><strong>Interconnect</strong><span>AXI-Stream</span></div>
+      </div>
+      <figcaption style="text-align:center; color: var(--grey-1); font-size: 13px; margin-top: 8px;">Single synchronous chain routed through the PL fabric — no intermediate buffering between stages.</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     3. PROBLEM STATEMENT
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="problem" aria-labelledby="problem-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="problem-heading">Why an FPGA?</h2>
+      <span class="count">— problem, target, constraint</span>
+    </div>
+    <div class="problem-block fade-in delay-4">
+      <p class="lead">
+        Commercial guitar multi-effects are expensive, inflexible, and force musicians to physically rewire their signal chain for every configuration. Software modelers fix flexibility but buy it with <strong>audible processing latency</strong> — the sample-buffering tax of general-purpose OSes.
+      </p>
+      <p>
+        High-quality real-time audio demands <strong>deterministic timing</strong>: every sample must be processed on a predictable clock edge, with no OS jitter, no buffer underruns, and no phase drift between stages. That constraint is the domain of synchronous hardware, not general-purpose compute.
+      </p>
+      <p>
+        This project answers with a <strong>single, fully integrated Zynq-7000 SoC design</strong>: a chain of hand-coded Verilog DSP blocks in the PL fabric running at 44.1 kHz with direct backpressure coupling (~0 buffering between stages), and a Linux control plane on the ARM core for live parameter updates over AXI memory-mapped registers. Estimated end-to-end latency: <strong>2–4 µs</strong> — vs. milliseconds for software.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     4. KEY METRICS (recruiter-facing numbers)
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="metrics" aria-labelledby="metrics-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="metrics-heading">Key Numbers</h2>
+      <span class="count">— scope at a glance</span>
+    </div>
+
+    <div class="grid-3">
+      <div class="metric-card card fade-in delay-4">
+        <div class="metric-value">7</div>
+        <div class="metric-label">Real-Time Effects</div>
+        <p>EQ, distortion, fuzz, delay, phaser, chorus, noise gate — all in Verilog, all parameterized by bit depth.</p>
+      </div>
+      <div class="metric-card card fade-in delay-4">
+        <div class="metric-value">~2–4 µs</div>
+        <div class="metric-label">Estimated Latency</div>
+        <p>End-to-end. ~7-cycle DSP pass at 100 MHz = 70 ns core processing; I²S codec I/O dominates the budget.</p>
+        <small>Post-synthesis verification in progress</small>
+      </div>
+      <div class="metric-card card fade-in delay-5">
+        <div class="metric-value">&lt;1 ms</div>
+        <div class="metric-label">Latency Target</div>
+        <p>Predicted timing closure with &gt;0.5 ns slack per DSP module against the 10 ns PL clock period.</p>
+      </div>
+      <div class="metric-card card fade-in delay-5">
+        <div class="metric-value">3</div>
+        <div class="metric-label">Bit Widths</div>
+        <p>One RTL core parameterized for 16 / 20 / 24-bit audio with extended-precision internal arithmetic.</p>
+      </div>
+      <div class="metric-card card fade-in delay-5">
+        <div class="metric-value">~2 cyc</div>
+        <div class="metric-label">Hot-Swap Cost</div>
+        <p>Latency hit to reconfigure the live chain at the MUX crossbar — inaudible at 44.1 kHz.</p>
+      </div>
+      <div class="metric-card card fade-in delay-6">
+        <div class="metric-value">+16</div>
+        <div class="metric-label">Guard Bits</div>
+        <p>Internal arithmetic extends WIDTH by 16 bits to preserve headroom through cascaded gain stages.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     5. TECHNICAL ARCHITECTURE
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="architecture" aria-labelledby="architecture-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="architecture-heading">Architecture</h2>
+      <span class="count">— two domains, one clock discipline</span>
+    </div>
+
+    <p class="fade-in delay-3" style="max-width: 720px; margin-bottom: 28px;">
+      The design splits into a <strong>hard real-time domain</strong> (PL fabric) and a <strong>soft control domain</strong> (ARM + Linux). Audio never crosses a software boundary; parameters do — and only at ~44&thinsp;k updates/sec against a 667 MHz core.
+    </p>
+
+    <div class="grid-2">
+      <article class="arch-card card fade-in delay-4">
+        <div class="arch-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
+          </svg>
+        </div>
+        <div class="arch-num">01</div>
+        <h3>Programmable Logic (PL) Domain</h3>
+        <p>
+          All real-time DSP executes <strong>synchronously at 44.1 kHz</strong> in FPGA fabric: 53,200 LUTs, 220 DSP48 slices, 4.9 Mb block RAM. Stages are chained via <strong>AXI-Stream with direct backpressure coupling</strong> — no intermediate FIFO — so latency is one clock per stage plus processing delay, fully deterministic.
+        </p>
+      </article>
+
+      <article class="arch-card card fade-in delay-4">
+        <div class="arch-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M8 4a4 4 0 0 1 8 8M16 20a4 4 0 0 1-8-8"/>
+          </svg>
+        </div>
+        <div class="arch-num">02</div>
+        <h3>Processing System (PS) Domain</h3>
+        <p>
+          Dual-core ARM Cortex-A9 runs Petalinux. A terminal UI exposes effect parameters as <strong>memory-mapped 32-bit registers</strong>; writes land in the PL on the next clock cycle via single-cycle AXI-Lite transactions. PS has no real-time constraint — 44&thinsp;k updates/sec is trivial at 667 MHz.
+        </p>
+      </article>
+    </div>
+
+    <h3 style="margin-top: 30px; font-size: 1.05rem; color: var(--ink);">Latency budget</h3>
+    <div class="grid-2 fade-in delay-5" style="margin-top: 6px;">
+      <div class="card">
+        <p style="font-size: 13.5px;">
+          <strong>Codec ADC → DSP in:</strong> ~1–2 µs (I²S)<br>
+          <strong>DSP effect chain:</strong> ~7 cycles @ 100 MHz = 70 ns<br>
+          <strong>DSP out → Codec DAC:</strong> ~1–2 µs (I²S)<br>
+          <span style="color: var(--p-primary); font-weight: 600;">Total ≈ 2–4 µs</span>
+        </p>
+      </div>
+      <div class="card">
+        <p style="font-size: 13.5px;">
+          <strong>PL clock:</strong> 100 MHz (10 ns period), slack &gt;0.5 ns<br>
+          <strong>Sample clock:</strong> 44.1 kHz (22.7 µs period)<br>
+          <strong>AXI-Lite clock:</strong> 100 MHz (parameter path)<br>
+          <span style="color: var(--grey-2);">Clock-domain crossing (I²S → PL) via CDC synchronizer chains.</span>
+        </p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 30px; font-size: 1.05rem; color: var(--ink);">Backpressure coupling</h3>
+    <div class="block fade-in delay-5">
+<span class="c">// Direct backpressure coupling — no buffering between stages</span>
+<span class="k">assign</span> i_tready = o_tready;  <span class="c">// Upstream waits if downstream is busy</span>
+<span class="k">assign</span> o_tvalid = i_tvalid;  <span class="c">// Valid passes through unchanged</span>
+<span class="c">// If downstream can't accept a sample, upstream stalls — the whole chain rate-limits as one.</span>
+</div>
+
+    <h3 style="margin-top: 30px; font-size: 1.05rem; color: var(--ink);">Physical signal chain</h3>
+    <p class="fade-in delay-5" style="font-size: 13.5px; color: var(--ink-soft); max-width: 820px;">
+      Guitar → Buffer pedal → <strong>ADAU1761 codec ADC</strong> (I²S in, 44.1 kHz, 16/24-bit) → <strong>Zynq PL fabric</strong> (DSP chain) → <strong>codec DAC</strong> (I²S out) → Amplifier / monitoring.<br>
+      <span style="color: var(--grey-2);">Codec configured over I²C; I²S clock derived from the PL. Anti-aliasing and reconstruction filters run on-codec.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     6. DSP LIBRARY
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="dsp" aria-labelledby="dsp-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="dsp-heading">DSP Library</h2>
+      <span class="count">— seven hand-coded Verilog effects</span>
+    </div>
+
+    <div class="grid-3">
+      <article class="card fade-in delay-4">
+        <h3>EQ</h3>
+        <p class="tagline">6 cascading biquad IIR sections</p>
+        <p>Modeled in MATLAB, ported to fixed-point. Cascaded direct-form II topology for numerical stability; frequency response validated pre-synthesis.</p>
+      </article>
+      <article class="card fade-in delay-4">
+        <h3>Distortion</h3>
+        <p class="tagline">Asymmetric hard clipping</p>
+        <p>Independent +/− clipping thresholds (Q0.15) with pre-gain (Q2.13, 0–4×) and makeup gain. Emulates diode-style square waves.</p>
+      </article>
+      <article class="card fade-in delay-4">
+        <h3>Fuzz</h3>
+        <p class="tagline">Asymmetric clip + gain</p>
+        <p>1-pole lowpass tone control (8-bit coefficient) for high-frequency shaping, plus output compensation gain.</p>
+      </article>
+      <article class="card fade-in delay-5">
+        <h3>Delay</h3>
+        <p class="tagline">FIFO · BRAM-backed</p>
+        <p>Configurable buffer depth parameterized by both bit width and delay time in samples. Synthesis allocates BRAM efficiently.</p>
+      </article>
+      <article class="card fade-in delay-5">
+        <h3>Phaser</h3>
+        <p class="tagline">All-pass + LFO</p>
+        <p>Modulated all-pass filters with LFO driven synchronously at the sample rate — one sample of modulation per clock.</p>
+      </article>
+      <article class="card fade-in delay-5">
+        <h3>Chorus</h3>
+        <p class="tagline">Modulated delay</p>
+        <p>Modulated delay lines that smear timing slightly across the chain for the classic thickened, detuned image.</p>
+      </article>
+      <article class="card fade-in delay-6">
+        <h3>Noise Gate</h3>
+        <p class="tagline">Level-based gating</p>
+        <p>Threshold gating with hysteresis — holds the gate open through brief level dips to avoid chatter on decaying notes.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     7. FIXED-POINT & PARAMETERIZATION
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="fixed-point" aria-labelledby="fixed-point-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="fixed-point-heading">Fixed-Point Strategy</h2>
+      <span class="count">— one RTL core across bit depths</span>
+    </div>
+
+    <p class="fade-in delay-3" style="max-width: 760px; margin-bottom: 28px;">
+      Every arithmetic module accepts <code>WIDTH</code> as a generic — 16, 20, or 24 bits per sample. Internal arithmetic widens to <code>WIDTH+16</code> bits, rounds to nearest, then saturates back to the output width. One synthesis configuration produces the whole bit-depth family.
+    </p>
+
+    <div class="block fade-in delay-4">
+<span class="c">// Parameterized sample width — one core synthesizes 16 / 20 / 24-bit audio</span>
+<span class="k">localparam</span> WIDTH = 24;              <span class="c">// Input/output sample width</span>
+<span class="k">wire</span> <span class="k">signed</span> [WIDTH-1:0]   sample;  <span class="c">// Audio sample</span>
+<span class="k">wire</span> <span class="k">signed</span> [WIDTH+15:0] temp;    <span class="c">// Extended precision for multiplication</span>
+<span class="c">// After rounding and truncation, result saturates back to WIDTH bits.</span>
+</div>
+
+    <div class="grid-2" style="margin-top: 6px;">
+      <div class="card fade-in delay-5">
+        <h3>Q-Format Coefficients</h3>
+        <div class="dsp-list" style="margin-top: 10px;">
+          <span class="dsp-pill">Gain: Q2.13</span>
+          <span class="dsp-pill">Threshold: Q0.15</span>
+          <span class="dsp-pill">Tone / LFO: Q0.N</span>
+        </div>
+        <p style="margin-top: 10px;">
+          Q2.13 gives 0.0–3.99× gain with 13 fractional bits; Q0.15 normalizes ±1.0 for peak detection. Effect-specific coefficients adapt <code>N</code> to their numeric range.
+        </p>
+      </div>
+      <div class="card fade-in delay-5">
+        <h3>Saturation &amp; Rounding</h3>
+        <div class="dsp-list" style="margin-top: 10px;">
+          <span class="dsp-pill">Round-to-nearest</span>
+          <span class="dsp-pill">Output clamp</span>
+        </div>
+        <p style="margin-top: 10px;">
+          Post-multiply: round-to-nearest, then truncate. Output clamps to [−2^(WIDTH−1), 2^(WIDTH−1)−1] — no overflow rollover, deterministic behavior across all bit depths.
+        </p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 30px; font-size: 1.05rem; color: var(--ink);">Hot-swap via crossbar routing</h3>
+    <div class="grid-2 fade-in delay-5">
+      <div class="card">
+        <p style="font-size: 13.5px;">
+          Reconfiguration is a <strong>routing-layer event</strong>, not a DSP-layer event. On the next clock edge the crossbar MUX selects the new path; samples in transit finish the old chain cleanly.
+        </p>
+      </div>
+      <div class="card">
+        <p style="font-size: 13.5px;">
+          <strong>Latency hit: ~2 cycles per sample</strong> during the transition — at 44.1 kHz against a 100 MHz clock, an inaudible 20 ns. No pops, no clicks, no dropped samples.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     8. DESIGN CHALLENGES
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="challenges" aria-labelledby="challenges-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-4">
+      <h2 id="challenges-heading">Design Decisions</h2>
+      <span class="count">— problems met with explicit tradeoffs</span>
+    </div>
+
+    <div class="grid-2">
+      <article class="challenge-card card fade-in delay-4">
+        <div class="challenge-index">01 · Fixed-Point</div>
+        <h3>Saturation in multi-stage gain</h3>
+        <p>Cascaded pre-gain → post-gain stages can overflow even when the final output is in range. Saturating each stage loses dynamic range; saturating only at the end masks intermediate clipping.</p>
+        <div class="tbl-row" style="margin-top: 10px;">
+          <span class="k tbl-col">Tradeoff</span>
+          <span class="v" style="flex: 1;">Guard bits vs. silicon area.</span>
+        </div>
+        <p style="margin-top: 8px;">
+          <strong style="color: var(--p-primary);">Chosen:</strong> extended-precision intermediates (<code>WIDTH+16</code>) with rounding before truncation; saturation only at the output stage. Headroom preserved through the chain, deterministic output.
+        </p>
+      </article>
+
+      <article class="challenge-card card fade-in delay-5">
+        <div class="challenge-index">02 · Real-Time</div>
+        <h3>Hot-swap without audio glitches</h3>
+        <p>Reconfiguring the chain mid-stream leaves samples halfway through an old effect path. Abrupt switching causes pops and clicks.</p>
+        <div class="tbl-row" style="margin-top: 10px;">
+          <span class="k tbl-col">Tradeoff</span>
+          <span class="v" style="flex: 1;">Zero-latency reconfig vs. glitch-free audio.</span>
+        </div>
+        <p style="margin-top: 8px;">
+          <strong style="color: var(--p-primary);">Chosen:</strong> MUX/crossbar-level switch on the next clock edge; in-flight samples drain the old chain. ~2 cycles overhead — inaudible at 44.1 kHz.
+        </p>
+      </article>
+
+      <article class="challenge-card card fade-in delay-5">
+        <div class="challenge-index">03 · Resources</div>
+        <h3>Bit-depth vs. fabric cost</h3>
+        <p>16-bit audio uses fewer LUTs/DSP slices than 24-bit, but the relationship is non-linear — DSP48 slices quantize in chunks. Users need visibility to pick a bit depth.</p>
+        <div class="tbl-row" style="margin-top: 10px;">
+          <span class="k tbl-col">Tradeoff</span>
+          <span class="v" style="flex: 1;">Fidelity vs. resource cost.</span>
+        </div>
+        <p style="margin-top: 8px;">
+          <strong style="color: var(--p-primary);">Chosen:</strong> <code>WIDTH</code> as a synthesis-time generic, with a planned LUT / DSP48 / BRAM utilization table at 16 / 20 / 24-bit from post-synthesis reports.
+        </p>
+      </article>
+
+      <article class="challenge-card card fade-in delay-6">
+        <div class="challenge-index">04 · Memory</div>
+        <h3>Parameterized delay buffers</h3>
+        <p>Delay time scales with bit width — a 24-bit sample occupies 1.5× the BRAM of 16-bit for the same echo time.</p>
+        <div class="tbl-row" style="margin-top: 10px;">
+          <span class="k tbl-col">Tradeoff</span>
+          <span class="v" style="flex: 1;">Memory efficiency vs. maximum delay time.</span>
+        </div>
+        <p style="margin-top: 8px;">
+          <strong style="color: var(--p-primary);">Chosen:</strong> buffers parameterized by bit depth <em>and</em> delay time in samples; max echo times per bit-depth tier documented during profiling.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     9. TEST & VERIFICATION
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="verification" aria-labelledby="verification-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="verification-heading">Test &amp; Verification</h2>
+      <span class="count">— no formal methods, so coverage is explicit</span>
+    </div>
+
+    <p class="fade-in delay-3" style="max-width: 760px; margin-bottom: 24px;">
+      Every effect ships with a dedicated Icarus Verilog testbench (plus post-synthesis validation in Vivado). Coverage is enumerated rather than assumed.
+    </p>
+
+    <div class="test-grid fade-in delay-4">
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Frequency sweep — DC to Nyquist</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Amplitude sweep — ±1.0 normalized</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Parameter edge cases — min/max gain, thresholds</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Clipping &amp; saturation scenarios</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Backpressure — tvalid/tready toggling</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Waveform capture — VCD via GTKWave</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Golden MATLAB reference comparison</span>
+      </div>
+      <div class="test-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="5 19 5 12 12 19 19 12 19 5"/></svg>
+        <span>Post-synthesis timing closure (&gt;0.5 ns slack)</span>
+      </div>
+    </div>
+
+    <div class="code-block fade-in delay-5" style="margin-top: 24px;">
+<span class="hl"># Compile + run the distortion testbench (Icarus Verilog)</span>
+iverilog -g2009 -o hard_clip_tb.out sim/hard_clip/hard_clip.v sim/hard_clip/hard_clip_tb.v
+vvp hard_clip_tb.out
+<span class="hl"># Waveform output: hard_clip_tb.vcd — inspect in GTKWave</span>
+</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     10. TOOLCHAIN
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="toolchain" aria-labelledby="toolchain-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="toolchain-heading">Toolchain</h2>
+      <span class="count">— where each stage is validated</span>
+    </div>
+
+    <div class="grid-3">
+      <div class="card fade-in delay-4">
+        <h3>Vivado</h3>
+        <p class="tagline">Synthesis · Place &amp; Route</p>
+        <p>RTL entry, 100 MHz timing constraints, timing closure and resource reports, bitstream for board programming via JTAG.</p>
+      </div>
+      <div class="card fade-in delay-4">
+        <h3>Icarus Verilog</h3>
+        <p class="tagline">Behavioral simulation</p>
+        <p>Per-effect testbenches compiled with <code>-g2009</code>, driven with swept inputs, waveform output to VCD for GTKWave.</p>
+      </div>
+      <div class="card fade-in delay-5">
+        <h3>MATLAB</h3>
+        <p class="tagline">Filter design &amp; modeling</p>
+        <p>Floating-point biquad design → Q-format quantization → fixed-point response validation → Verilog coefficient export. 6 filter banks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     11. SKILLS & TECHNOLOGIES
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="skills" aria-labelledby="skills-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-4">
+      <h2 id="skills-heading">Skills Applied</h2>
+      <span class="count">— what this project demonstrates</span>
+    </div>
+    <div class="skills-grid fade-in delay-5">
+      <span class="skill featured">RTL Design (Verilog)</span>
+      <span class="skill featured">AXI-Stream Interconnect</span>
+      <span class="skill featured">DSP &amp; Signal Processing</span>
+      <span class="skill featured">FPGA Resource Optimization</span>
+      <span class="skill">Fixed-Point Arithmetic</span>
+      <span class="skill">Synchronous Design &amp; Timing</span>
+      <span class="skill">Clock-Domain Crossing</span>
+      <span class="skill">Vivado Synthesis</span>
+      <span class="skill">Icarus Verilog Testbenches</span>
+      <span class="skill">Zynq-7000 SoC</span>
+      <span class="skill">I²S / I²C Audio Interfaces</span>
+      <span class="skill">MATLAB Filter Design</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     12. BUILD & REPOSITORY
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="build" aria-labelledby="build-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-4">
+      <h2 id="build-heading">Repository</h2>
+      <span class="count">— layout and getting started</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="card fade-in delay-4">
+        <h3>Repo Layout</h3>
+        <pre class="file-tree" style="background: var(--p-bg-alt); border: 1px solid var(--p-border); border-radius: var(--radius-sm); padding: 14px 18px; font-size: 13px; line-height: 1.55; overflow-x: auto;">
+<span class="dir" style="color: var(--p-tag-color);">.</span>
+├── <span class="dir" style="color: var(--p-tag-color);">docs/</span>        <span class="dim">— BOM, roadmap, SWOT, journal</span>
+├── <span class="dir" style="color: var(--p-tag-color);">sim/</span>         <span class="dim">— Verilog sources + testbenches</span>
+│   ├── eq/         <span class="dim">— 6-band biquad EQ</span>
+│   ├── hard_clip/  <span class="dim">— distortion (asym. clip)</span>
+│   ├── fuzz/       <span class="dim">— fuzz effect</span>
+│   ├── delay/      <span class="dim">— FIFO delay line</span>
+│   ├── phaser/     <span class="dim">— all-pass + LFO</span>
+│   ├── chorus/     <span class="dim">— modulated delay</span>
+│   ├── noise_gate/ <span class="dim">— threshold gate</span>
+│   ├── i2s_transceiver/ <span class="dim">— I²S codec interface</span>
+│   ├── fifo_buffer/<span class="dim">— sample buffering</span>
+│   └── pipeline/   <span class="dim">— top-level chain</span>
+└── <span class="dir" style="color: var(--p-tag-color);">vivado/</span>      <span class="dim">— synthesis project</span></pre>
+      </div>
+
+      <div class="card fade-in delay-5">
+        <h3>Run a Simulation</h3>
+        <p style="margin-top: 8px;">Each effect ships with an Icarus testbench. Clone, compile, run — output lands as a VCD waveform.</p>
+        <div class="code-block" style="margin-top: 10px;">
+<span class="hl"># Example: simulate the hard_clip effect</span>
+cd sim/hard_clip
+iverilog -g2009 -o hard_clip_tb.out hard_clip.v hard_clip_tb.v
+vvp hard_clip_tb.out
+<span class="hl"># → hard_clip_tb.vcd (open in GTKWave)</span>
+</div>
+        <p style="margin-top: 12px; font-size: 13.5px;">
+          <strong style="color: var(--ink);">Status:</strong> Core DSP pipeline complete. Hot-swap testing, end-to-end latency measurement, and the resource utilization table are in progress.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     13. FOOTER CTA
+     ═══════════════════════════════════════════════════════════════════ -->
+<section class="cta-section" id="contact" aria-labelledby="contact-heading">
+  <div class="container">
+    <h2 id="contact-heading" class="cta-title fade-in delay-5">
+      Want to read the RTL?
+    </h2>
+    <p class="cta-sub fade-in delay-5">
+      Every effect, testbench, and pipeline module is open in the repository — clone it, run the benches, and trace the synchronous chain yourself.
+    </p>
+    <div class="cta-buttons fade-in delay-6">
+      <a href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/>
+        </svg>
+        View on GitHub
+      </a>
+      <a href="../../index.html" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back to Portfolio
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     14. HTML FOOTER
+     ═══════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>
+      FPGA Effects Pedal
+      &nbsp;·&nbsp;
+      Real-time modular audio acceleration on Zynq-7000 SoC
+      &nbsp;·&nbsp;
+      <a href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener">Repository</a>
+    </p>
+    <p style="margin-top: 6px;">
+      <a href="https://github.com/nehnes" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.linkedin.com/in/nathan-ehnes-562b08363/" target="_blank" rel="noopener">LinkedIn</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:nathanehnes@gmail.com">nathanehnes@gmail.com</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

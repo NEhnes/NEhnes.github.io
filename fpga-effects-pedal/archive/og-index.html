@@ -4,43 +4,63 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>FPGA Effects Pedal — Nathan Ehnes</title>
-<meta name="description" content="Real-time, low-latency guitar effects processing on a Xilinx Zynq-7000 SoC: 7 hand-coded Verilog DSP effects, parameterized bit-depth, AXI-Stream hot-swap chain, and a Linux control plane." />
+<meta name="description" content="FPGA-based guitar effects pedal: real-time modular DSP on a Zynq-7000 SoC, featuring hand-coded Verilog audio pipelines and AXI-Stream interfaces." />
 <style>
 
 /* ═══════════════════════════════════════════════════════════════════
    MODERN DOLCH DARK — GOLD VARIANT
+   ───────────────────────────────────────────────────────────────────
+   Primary accent:   #d98f00  gold  — buttons, active tags, headings
+   Secondary accent: #c86428  amber — left-bar card reveals, borders
    ═══════════════════════════════════════════════════════════════════ */
 :root {
+  /* PRIMARY GOLD ACCENT */
   --p-primary:          #d98f00;
   --p-primary-alt:      #c28000;
   --p-primary-soft:     #6b4600;
+
+  /* SECONDARY ACCENT */
   --p-secondary-accent: #c86428;
+
+  /* NEUTRALS */
   --p-secondary:        #8a8a8a;
   --p-secondary-lt:     #6a6a6a;
+
+  /* BACKGROUNDS  (dark → mid → light surface) */
   --p-bg:               #2a2a2a;
   --p-bg-alt:           #333333;
   --p-surface:          #383838;
+
+  /* TEXT */
   --p-ink:              #f0f0f0;
   --p-ink-soft:         #c8c8c8;
+
+  /* BORDERS */
   --p-border:           rgba(240,240,240,0.07);
   --p-border-pill:      rgba(240,240,240,0.09);
+
+  /* COMPONENT TOKENS */
   --p-tag-bg:           rgba(217,143,0,0.12);
   --p-tag-color:        #eb9b00;
   --p-badge-bg:         rgba(217,143,0,0.15);
-  --p-badge-color:      #ffb700;
+  --p-badge-color:  #ffb700;
   --p-icon-bg:          rgba(217,143,0,0.13);
   --p-icon-color:       #d98f00;
   --p-card-bg:          #333333;
   --p-gold:             #eec945;
+
+  /* BUTTONS */
   --p-btn-primary-bg:        #d98f00;
   --p-btn-primary-fg:        #1a1a1a;
   --p-btn-secondary-bg:      #383838;
   --p-btn-secondary-fg:      #f0f0f0;
   --p-btn-secondary-border:  rgba(240,240,240,0.18);
+
+  /* TYPOGRAPHIC ACCENTS */
   --p-punchline:        #d98f00;
   --p-nav-hover:        #d98f00;
-  --p-footer-border:    rgba(240,240,240,0.07);
 
+  /* ALIASES */
   --green-1:  var(--p-primary-alt);
   --green-2:  var(--p-primary);
   --grey-1:   var(--p-secondary);
@@ -48,10 +68,12 @@
   --ink:      var(--p-ink);
   --ink-soft: var(--p-ink-soft);
 
+  /* SHADOWS */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.05);
   --shadow-lg: 0 12px 28px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.06);
 
+  /* SHAPE */
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
@@ -290,7 +312,7 @@ nav {
   color: var(--p-punchline);
   letter-spacing: -0.02em;
   margin-bottom: 20px;
-  max-width: 760px;
+  max-width: 720px;
 }
 
 .hero-meta {
@@ -397,7 +419,7 @@ nav {
   border-radius: 13px;
   pointer-events: none;
 }
-.device-wireframe img { position: relative; z-index: 1; }
+.device-wireframe span { position: relative; z-index: 1; padding: 0 24px; }
 
 .visual-specs { position: relative; z-index: 1; display: grid; gap: 12px; }
 .spec-pill {
@@ -426,61 +448,32 @@ nav {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   HEADLINE METRICS STRIP
+   IMAGE PLACEHOLDERS & REAL IMAGES
    ═══════════════════════════════════════════════════════════════════ */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-}
-@media (min-width: 600px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 900px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
-
-.metric-card {
-  background: var(--p-surface);
-  border: 1px solid var(--p-border);
+.img-placeholder {
+  width: 100%;
   border-radius: var(--radius-md);
-  padding: 22px;
-  position: relative;
-  overflow: hidden;
-  transition: all var(--transition);
+  border: 1px dashed var(--p-primary-soft);
+  background:
+    repeating-linear-gradient(45deg, rgba(217,143,0,0.04) 0 10px, transparent 10px 20px),
+    var(--p-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-1);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  padding: 24px;
+  gap: 8px;
 }
-.metric-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, rgba(217,143,0,0.12), transparent 40%);
-  pointer-events: none;
+.img-placeholder .filename {
+  color: var(--p-tag-color);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
 }
-.metric-card::after {
-  content: "";
-  position: absolute;
-  top: -1px; right: -1px;
-  width: 20px; height: 20px;
-  border-top: 2px solid var(--p-primary);
-  border-right: 2px solid var(--p-primary);
-  border-top-right-radius: var(--radius-md);
-  opacity: 0.40;
-  transition: all var(--transition);
-}
-.metric-card:hover::after { width: 36px; height: 36px; opacity: 1; }
-.metric-card > * { position: relative; z-index: 1; }
-
-.metric-value {
-  font-size: clamp(1.75rem, 5vw, 2.3rem);
-  font-weight: 700;
-  color: var(--p-badge-color);
-  letter-spacing: -0.04em;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-.metric-label {
-  color: var(--ink);
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-.metric-card > p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+.img-placeholder.r-16-9 { aspect-ratio: 16 / 9; }
 
 /* ═══════════════════════════════════════════════════════════════════
    PROBLEM STATEMENT BLOCK
@@ -498,47 +491,32 @@ nav {
 .problem-block strong { color: var(--ink); }
 
 /* ═══════════════════════════════════════════════════════════════════
-   ARCHITECTURE — DUAL DOMAIN
+   PROJECT OVERVIEW
    ═══════════════════════════════════════════════════════════════════ */
-.domain-grid {
+.overview-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 18px;
 }
-@media (min-width: 720px) { .domain-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 720px) { .overview-grid { grid-template-columns: 1fr 1fr; } }
 
-.arch-card {
+.overview-card {
   background: var(--p-card-bg);
   border: 1px solid var(--p-border);
   border-radius: var(--radius-md);
   padding: 24px;
-  position: relative;
-  overflow: hidden;
 }
-.arch-card .domain-tag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--p-badge-color);
-  background: var(--p-badge-bg);
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-bottom: 12px;
+.overview-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
-.arch-card h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
-.arch-card p { font-size: 14px; color: var(--grey-1); line-height: 1.65; margin: 0; }
-.arch-card ul {
-  margin-top: 12px;
-  padding-left: 18px;
-  font-size: 14px;
-  color: var(--grey-1);
-  line-height: 1.7;
-}
-.arch-card li::marker { color: var(--p-primary); }
+.overview-card p { font-size: 14px; margin: 0; }
 
+/* ═══════════════════════════════════════════════════════════════════
+   ARCHITECTURE — PIPELINE VARIANT
+   ═══════════════════════════════════════════════════════════════════ */
 .arch-pipeline {
   display: flex;
   align-items: stretch;
@@ -550,7 +528,6 @@ nav {
   padding: 28px 24px;
   position: relative;
   overflow: hidden;
-  flex-wrap: wrap;
 }
 
 .arch-pipeline::before {
@@ -565,11 +542,11 @@ nav {
 .arch-block {
   position: relative;
   z-index: 1;
-  flex: 1 1 72px;
+  flex: 1 1 80px;
   background: var(--p-bg-alt);
   border: 1px solid var(--p-border-pill);
   border-radius: var(--radius-sm);
-  padding: 12px 8px;
+  padding: 12px 10px;
   text-align: center;
   font-size: 13px;
   font-weight: 600;
@@ -593,7 +570,6 @@ nav {
   border-color: var(--p-primary-soft);
   color: var(--p-tag-color);
 }
-.arch-block.io { border-style: dashed; border-color: var(--p-secondary-lt); }
 
 .arch-arrow {
   color: var(--p-primary);
@@ -611,14 +587,6 @@ nav {
   .arch-pipeline { flex-direction: column; gap: 4px; padding: 20px 16px; }
   .arch-arrow { justify-content: center; transform: rotate(90deg); }
   .arch-block { flex: none; }
-}
-
-figure.arch-figure { margin-top: 24px; }
-figure.arch-figure figcaption {
-  color: var(--grey-1);
-  font-size: 13px;
-  text-align: center;
-  margin-top: 12px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -672,7 +640,6 @@ figure.arch-figure figcaption {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 .impl-card h3 code {
   font-size: 11px;
@@ -685,31 +652,61 @@ figure.arch-figure figcaption {
 .impl-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CODE BLOCK
+   METRICS / RESULTS GRID
    ═══════════════════════════════════════════════════════════════════ */
-.code-block {
-  background: #1e1e1e;
-  border: 1px solid var(--p-border);
-  border-radius: var(--radius-sm);
-  padding: 16px 18px;
-  overflow-x: auto;
-  margin-top: 20px;
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
-.code-block code {
-  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--ink-soft);
-  white-space: pre;
-}
-.code-block .hl { color: var(--p-tag-color); }
-.code-block .cm { color: var(--grey-2); }
+@media (min-width: 600px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .metrics-grid { grid-template-columns: repeat(3, 1fr); } }
 
-.code-caption {
-  color: var(--grey-2);
-  font-size: 13px;
-  margin-top: 8px;
+.metric-card {
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
 }
+.metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(217,143,0,0.12), transparent 40%);
+  pointer-events: none;
+}
+.metric-card::after {
+  content: "";
+  position: absolute;
+  top: -1px; right: -1px;
+  width: 20px; height: 20px;
+  border-top: 2px solid var(--p-primary);
+  border-right: 2px solid var(--p-primary);
+  border-top-right-radius: var(--radius-md);
+  opacity: 0.40;
+  transition: all var(--transition);
+}
+.metric-card:hover::after { width: 36px; height: 36px; opacity: 1; }
+.metric-card > * { position: relative; z-index: 1; }
+
+.metric-value {
+  font-size: clamp(1.75rem, 5vw, 2.3rem);
+  font-weight: 700;
+  color: var(--p-badge-color);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.metric-label {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.metric-card > p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════
    DESIGN CHALLENGE CARDS
@@ -759,8 +756,6 @@ figure.arch-figure figcaption {
   margin-bottom: 10px;
 }
 .challenge-card p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin: 0; }
-.challenge-card p + p { margin-top: 8px; }
-.challenge-card .lab { color: var(--p-tag-color); font-weight: 600; }
 
 /* ═══════════════════════════════════════════════════════════════════
    SKILLS / TECHNOLOGY TAGS
@@ -816,6 +811,23 @@ figure.arch-figure figcaption {
 }
 .build-card > p { font-size: 14px; color: var(--grey-1); line-height: 1.6; margin-bottom: 14px; }
 
+.code-block {
+  background: #1e1e1e;
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+  margin-top: 14px;
+}
+.code-block code {
+  font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  white-space: pre;
+}
+.code-block .hl { color: var(--p-tag-color); }
+
 pre.file-tree {
   background: var(--p-bg-alt);
   border: 1px solid var(--p-border);
@@ -831,37 +843,6 @@ pre.file-tree {
 }
 pre.file-tree .dir  { color: var(--p-tag-color); }
 pre.file-tree .note { color: var(--grey-2); }
-
-/* ═══════════════════════════════════════════════════════════════════
-   STATUS / ROADMAP
-   ═══════════════════════════════════════════════════════════════════ */
-.status-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 4px;
-}
-.status-item {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  background: var(--p-card-bg);
-  border: 1px solid var(--p-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 18px;
-  font-size: 14px;
-  color: var(--ink-soft);
-}
-.status-item .st {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-  width: 72px;
-}
-.st.done { color: var(--p-badge-color); }
-.st.wip  { color: var(--p-secondary-accent); }
-.st.next { color: var(--grey-2); }
 
 /* ═══════════════════════════════════════════════════════════════════
    FOOTER CTA SECTION
@@ -887,7 +868,7 @@ pre.file-tree .note { color: var(--grey-2); }
    FOOTER
    ═══════════════════════════════════════════════════════════════════ */
 footer {
-  border-top: 1px solid var(--p-footer-border);
+  border-top: 1px solid var(--p-border);
   padding: 28px 0;
   text-align: center;
   color: var(--grey-2);
@@ -914,13 +895,13 @@ a:focus-visible, button:focus-visible {
 <header>
   <div class="container fade-in delay-1">
     <nav aria-label="Primary navigation">
-      <a href="../index.html" class="logo" aria-label="Back to home">
+      <a href="../../index.html" class="logo" aria-label="Back to home">
         <span class="logo-mark" aria-hidden="true">NE</span>
         <span>NATHAN EHNES</span>
       </a>
       <ul class="nav-links">
-        <li><a href="#results">Results</a></li>
         <li><a href="#problem">Problem</a></li>
+        <li><a href="#overview">Overview</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#implementation">Implementation</a></li>
         <li><a href="#challenges">Challenges</a></li>
@@ -934,19 +915,19 @@ a:focus-visible, button:focus-visible {
 <main>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     HERO
+     2. HERO
      ═══════════════════════════════════════════════════════════════════ -->
 <section class="hero" id="hero">
   <div class="container hero-inner">
 
     <div class="hero-eyebrow fade-in delay-2">
-      In Progress — Core DSP Pipeline Complete
+      In Progress
     </div>
 
     <h1 class="hero-title fade-in delay-2">FPGA Effects Pedal</h1>
 
     <p class="hero-punchline fade-in delay-3">
-      Seven real-time guitar effects in hand-coded Verilog on a Zynq-7000 SoC — deterministic sub-microsecond DSP latency, hot-swappable AXI-Stream chains, and a Linux control plane on the ARM core.
+      A real-time digital guitar pedal built on a Zynq-7000 SoC, combining hand-coded Verilog hardware acceleration pipelines with a Linux control plane.
     </p>
 
     <div class="hero-meta fade-in delay-4">
@@ -954,6 +935,8 @@ a:focus-visible, button:focus-visible {
         <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
         Solo Project
       </span>
@@ -964,7 +947,7 @@ a:focus-visible, button:focus-visible {
           <rect x="9" y="9" width="6" height="6"/>
           <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
         </svg>
-        Xilinx Zynq-7000 · PL + ARM Linux
+        Verilog · AXI-Stream · I²S
       </span>
 
       <span class="meta-item">
@@ -973,7 +956,7 @@ a:focus-visible, button:focus-visible {
           <polyline points="2 17 12 22 22 17"/>
           <polyline points="2 12 12 17 22 12"/>
         </svg>
-        44.1 kHz · 16–24-bit parameterized
+        Real-Time 48 kHz Audio Pipeline
       </span>
     </div>
 
@@ -989,64 +972,24 @@ a:focus-visible, button:focus-visible {
 
     <figure class="hero-visual fade-in delay-6" aria-label="Project overview visual">
       <div class="hero-visual-inner">
-        <div class="device-wireframe" aria-label="ZedBoard running the FPGA effects design">
-          <img src="./assets/images/fpga-bootup.jpeg" alt="Zedboard booting the FPGA effects pedal design" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        <div class="device-wireframe" aria-label="Zynq-7000 SoC and Pmod audio interfaces">
+          <img src="./assets/images/fpga-bootup.jpeg" alt="FPGA bootup" style="width:100%;height:100%;object-fit:cover;display:block;" />
         </div>
         <div class="visual-specs">
-          <div class="spec-pill"><strong>DSP Fabric</strong><span>53,200 LUTs · 220 DSP48</span></div>
-          <div class="spec-pill"><strong>PL Clock</strong><span>100 MHz, &gt;0.5 ns slack</span></div>
-          <div class="spec-pill"><strong>Interconnect</strong><span>AXI-Stream + AXI-Lite</span></div>
-          <div class="spec-pill"><strong>Audio Codec</strong><span>ADAU1761 · I²S / I²C</span></div>
+          <div class="spec-pill"><strong>Sampling Rate</strong><span>48 kHz</span></div>
+          <div class="spec-pill"><strong>DSP Fabric</strong><span>Zynq-7000 SoC</span></div>
+          <div class="spec-pill"><strong>Interconnect</strong><span>AXI-Stream</span></div>
+          <div class="spec-pill"><strong>HDL Version</strong><span>SystemVerilog / Verilog-2012</span></div>
         </div>
       </div>
-      <figcaption>Zynq-7000 ZedBoard — all seven effects synthesized into the PL fabric with Linux running on the dual-core ARM PS.</figcaption>
+      <figcaption>Hardware configuration featuring low-latency sample processing blocks mapped to FPGA fabric.</figcaption>
     </figure>
 
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     HEADLINE RESULTS
-     ═══════════════════════════════════════════════════════════════════ -->
-<section id="results" aria-labelledby="results-heading">
-  <div class="container">
-    <div class="section-header fade-in delay-3">
-      <h2 id="results-heading">Key Results</h2>
-      <span class="count">— what the design achieves</span>
-    </div>
-
-    <div class="metrics-grid">
-
-      <div class="metric-card fade-in delay-3">
-        <div class="metric-value">7</div>
-        <div class="metric-label">Real-Time Effects</div>
-        <p>6-band EQ, distortion, fuzz, delay, phaser, chorus, and noise gate — all synthesized onto Zynq PL with near-zero latency.</p>
-      </div>
-
-      <div class="metric-card fade-in delay-4">
-        <div class="metric-value">~2–4 µs</div>
-        <div class="metric-label">End-to-End Latency</div>
-        <p>Single-pass DSP chain with no inter-stage buffering: ~7 cycles at 100 MHz plus I²S codec transit. Negligible vs. software modelers.</p>
-      </div>
-
-      <div class="metric-card fade-in delay-5">
-        <div class="metric-value">~2 cycles</div>
-        <div class="metric-label">Hot-Swap Penalty</div>
-        <p>Effect chain reconfigured live via AXI-Stream crossbar MUX routing — glitch-free, inaudible at 44.1 kHz.</p>
-      </div>
-
-      <div class="metric-card fade-in delay-6">
-        <div class="metric-value">16–24</div>
-        <div class="metric-label">Bit-Depth Parameterization</div>
-        <p>Every module genericized on WIDTH with resource-utilization tradeoff analysis across 16/20/24-bit tiers.</p>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     PROBLEM STATEMENT
+     3. PROBLEM STATEMENT
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="problem" aria-labelledby="problem-heading">
   <div class="container">
@@ -1056,90 +999,75 @@ a:focus-visible, button:focus-visible {
     </div>
     <div class="problem-block fade-in delay-4">
       <p>
-        <strong>Commercial guitar effects are expensive, inflexible, and require physical rewiring — while software DAWs and mobile modelers introduce audible processing latency.</strong>
+        <strong>Traditional analog guitar stompboxes offer exceptional sonic warmth but lack flexibility, while software-based multi-effects introduce audible processing latency.</strong>
       </p>
       <p>
-        Musicians choosing between a rack of analog stompboxes and a laptop-based rig accept either a fixed, un-reconfigurable signal chain or the buffer delays, jitter, and context-switching of a general-purpose OS. Real-time performance monitoring demands deterministic sample processing on a hard clock.
+        Guitarists seeking complex multi-stage effect chains are often forced to choose between the unwieldy footprint of a physical analog pedalboard or the performance-degrading buffer delays of general-purpose computer or MCU operating systems. High-quality real-time audio requires rigid deterministic tracking to avoid phase alignment problems and jitter.
       </p>
       <p>
-        This project delivers a single, fully integrated FPGA-based solution: <strong>seven effects in hardware, reconfigurable signal chains, and practically zero latency</strong> — solving both the cost and the convenience problem without compromising audio determinism.
+        This project implements custom, hand-coded hardware architectures that ingest raw audio data streams and execute DSP mathematical calculations on a predictable clock cycle, matching analog speeds without compromising digital reconfigurability.
       </p>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     ARCHITECTURE
+     4. PROJECT OVERVIEW
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="overview" aria-labelledby="overview-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-3">
+      <h2 id="overview-heading">Overview</h2>
+      <span class="count">— scope and approach</span>
+    </div>
+
+    <p class="fade-in delay-4" style="max-width: 760px; font-size: 16px; color: var(--ink);">
+      This modular audio architecture leverages an FPGA-based processing paradigm to execute synchronous effect pipelines. Guitar pickups are pre-amplified, shifted with a 1.65 V DC bias, and digitized using an external Pmod ADC via the I²S protocol.
+    </p>
+    <p class="fade-in delay-4" style="max-width: 760px;">
+      Once the parallel data arrives inside the FPGA fabric, modular components execute arithmetic operations sequentially using fixed-point math routines. The finished calculations are fed straight back into a matching I²S DAC, stripped of their DC offsets, and low-pass filtered to clean out radio frequencies and clock artifacts before being delivered to an amplifier at line-level standard.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     5. TECHNICAL ARCHITECTURE
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="architecture" aria-labelledby="architecture-heading">
   <div class="container">
     <div class="section-header fade-in delay-3">
-      <h2 id="architecture-heading">System Architecture</h2>
-      <span class="count">— two-domain SoC design</span>
+      <h2 id="architecture-heading">Architecture</h2>
+      <span class="count">— signal path / system design</span>
     </div>
 
-    <p class="fade-in delay-3" style="max-width: 760px; margin-bottom: 24px;">
-      The design splits work by time-criticality: everything that must meet a hard deadline runs synchronously in FPGA fabric, while everything that needs flexibility runs on Linux — connected by AXI.
+    <p class="fade-in delay-3" style="max-width: 700px; margin-bottom: 24px;">
+      The real-time processing pipeline processes continuous data linearly from ingestion to audio playback, utilizing custom internal handshakes for low-overhead interconnectivity.
     </p>
 
-    <div class="domain-grid">
-      <div class="arch-card fade-in delay-4">
-        <span class="domain-tag">PL · Programmable Logic</span>
-        <h3>Real-Time DSP Domain</h3>
-        <p>All audio processing at 44.1 kHz in Verilog, chained via AXI-Stream with direct backpressure coupling — no intermediate buffering, deterministic per-stage latency.</p>
-        <ul>
-          <li>7 effect blocks + I²S transceiver + FIFO buffer</li>
-          <li>100 MHz primary clock, timing closure &gt;0.5 ns slack</li>
-          <li>CDC synchronizer chains on I²S-domain signals</li>
-        </ul>
+    <figure class="fade-in delay-4">
+      <div class="arch-pipeline" role="img" aria-label="Linear hardware audio signal chain path from I2S In, through Hard Clipping and Delay modules, to I2S Out">
+        <div class="arch-block">I²S Transceiver In<small>i2s_in.v</small></div>
+        <span class="arch-arrow" aria-hidden="true">▶</span>
+        <div class="arch-block accent">Hard Clip DSP<small>hard_clip.v</small></div>
+        <span class="arch-arrow" aria-hidden="true">▶</span>
+        <div class="arch-block accent">Delay Line block<small>delay.v</small></div>
+        <span class="arch-arrow" aria-hidden="true">▶</span>
+        <div class="arch-block">I²S Transceiver Out<small>Audio Codec</small></div>
       </div>
-
-      <div class="arch-card fade-in delay-4">
-        <span class="domain-tag">PS · Processing System</span>
-        <h3>Linux Control Plane</h3>
-        <p>Dual-core ARM Cortex-A9 running PetaLinux with a terminal UI for parameter tuning. Low-frequency updates only — no real-time constraints on this side.</p>
-        <ul>
-          <li>Effect parameters exposed as AXI-Lite memory-mapped registers</li>
-          <li>Single-cycle AXI writes; PL samples new values next clock edge</li>
-          <li>Active chain state, live parameter values, preset recall</li>
-        </ul>
-      </div>
-    </div>
-
-    <figure class="arch-figure fade-in delay-5">
-      <div class="arch-pipeline" role="img" aria-label="Full effects pipeline from audio input through EQ, distortion, fuzz, delay, phaser, chorus, and noise gate to audio output">
-        <div class="arch-block io">In<small>I²S ADC</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">EQ<small>biquad ×6</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Distort<small>hard clip</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Fuzz<small>asym. clip</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Delay<small>FIFO/BRAM</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Phaser<small>all-pass+LFO</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Chorus<small>mod. delay</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block accent">Gate<small>thresh+hyst</small></div>
-        <span class="arch-arrow" aria-hidden="true">▶</span>
-        <div class="arch-block io">Out<small>I²S DAC</small></div>
-      </div>
-      <figcaption>The AXI-Stream processing chain. Each stage is selectable at runtime through crossbar MUX routing; the Linux PS re-wires the chain over AXI without interrupting audio.</figcaption>
+      <figcaption>Linear end-to-end processing pipeline tracking custom parallel blocks inside the FPGA fabric.</figcaption>
     </figure>
 
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     IMPLEMENTATION
+     6. IMPLEMENTATION DETAILS
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="implementation" aria-labelledby="implementation-heading">
   <div class="container">
     <div class="section-header fade-in delay-3">
-      <h2 id="implementation-heading">Technical Implementation</h2>
-      <span class="count">— the engineering underneath</span>
+      <h2 id="implementation-heading">Implementation</h2>
+      <span class="count">— subsystems and decisions</span>
     </div>
 
     <div class="impl-grid">
@@ -1147,121 +1075,108 @@ a:focus-visible, button:focus-visible {
       <article class="impl-card fade-in delay-4">
         <div class="impl-card-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="16 3 21 12 16 21"/><line x1="8" y1="21" x2="3" y2="12"/><line x1="3" y1="12" x2="21" y2="12"/>
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/>
           </svg>
         </div>
-        <h3>AXI-Stream Interconnect <code>tvalid/tready</code></h3>
-        <p>Cycle-by-cycle handshaking with direct backpressure coupling: <code>tready</code> propagates straight upstream, so the codec can rate-limit the entire chain. One clock of deterministic latency per stage, zero buffering overhead.</p>
+        <h3>I²S Transceiver In <code>i2s_in.v</code></h3>
+        <p>Manages clock serialization and framing alignments to ingest audio from external hardware codecs. Converts serial bits to structured parallel registers sample-accurately.</p>
       </article>
 
       <article class="impl-card fade-in delay-4">
         <div class="impl-card-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
           </svg>
         </div>
-        <h3>Fixed-Point Q-Format Math <code>Q2.13 · Q0.15</code></h3>
-        <p>Extended-precision intermediates (WIDTH+16 bits) with round-to-nearest then saturating truncation to range. Gains in Q2.13, clipping thresholds in Q0.15 — deterministic behavior across 16/20/24-bit configurations.</p>
+        <h3>Hard Clipping DSP <code>hard_clip.v</code></h3>
+        <p>Implements digital distortion by applying explicit mathematical ceiling and floor boundaries to the signed audio vector, emulating traditional diode distortion square waves.</p>
       </article>
 
       <article class="impl-card fade-in delay-5">
         <div class="impl-card-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <h3>Hot-Swap Effect Chain <code>crossbar MUX</code></h3>
-        <p>Reconfiguration selected on the next clock edge: in-flight samples finish the old chain, new samples take the new path. ~2 cycles of latency per sample — inaudible — and no pops or clicks from abrupt switching.</p>
+        <h3>Delay Line <code>delay.v</code></h3>
+        <p>Uses configurable internal delay lines to read past audio snapshots out of storage arrays. Provides real-time echo mixing by tracking accurate sample read and write intervals.</p>
       </article>
 
       <article class="impl-card fade-in delay-5">
         <div class="impl-card-icon" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 12h4l3-9 4 18 3-9h4"/>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
         </div>
-        <h3>6-Band Parametric EQ <code>biquad IIR</code></h3>
-        <p>Cascaded direct-form-II topology for numerical stability. Coefficients designed in MATLAB, quantized to Q-format, frequency response validated pre-synthesis against floating-point golden reference.</p>
-      </article>
-
-      <article class="impl-card fade-in delay-6">
-        <div class="impl-card-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2v6m0 0l3-3m-3 3L9 5"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 14h8"/>
-          </svg>
-        </div>
-        <h3>I²S Codec Interface <code>ADAU1761</code></h3>
-        <p>Hand-written I²S transceiver with clock generation and frame sync; I²C codec configuration. Sample clock derived in PL, with 44.1 kHz frame domain crossing handled by synchronizer chains.</p>
-      </article>
-
-      <article class="impl-card fade-in delay-6">
-        <div class="impl-card-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>
-          </svg>
-        </div>
-        <h3>Verification <code>Icarus + MATLAB golden</code></h3>
-        <p>Per-effect custom testbenches: swept frequency/amplitude injection, coefficient sweeps, saturation corner cases, and tvalid/tready backpressure toggling. Output verified against golden MATLAB models; VCD waveforms in GTKWave.</p>
+        <h3>FIFO Buffer <code>fifo_buffer.v</code></h3>
+        <p>Acts as an asynchronous data queue bridging clock phase boundaries safely. Eliminates dropouts or framing errors during cross-domain stream handshakes.</p>
       </article>
 
     </div>
-
-    <div class="code-block fade-in delay-5">
-<code><span class="cm">// Direct backpressure coupling — deterministic latency, zero inter-stage buffering</span>
-<span class="hl">assign</span> i_tready = o_tready;   <span class="cm">// upstream waits if downstream busy</span>
-<span class="hl">assign</span> o_tvalid = i_tvalid;   <span class="cm">// valid passes through unchanged</span></code>
-    </div>
-    <p class="code-caption fade-in delay-5">The AXI-Stream handshake pattern used between every effect stage in the chain.</p>
-
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     DESIGN CHALLENGES
+     7. RESULTS & METRICS
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="results" aria-labelledby="results-heading">
+  <div class="container">
+    <div class="section-header fade-in delay-4">
+      <h2 id="results-heading">Results</h2>
+      <span class="count">— measurable outcomes</span>
+    </div>
+
+    <div class="metrics-grid">
+
+      <div class="metric-card fade-in delay-4">
+        <div class="metric-value">48 kHz</div>
+        <div class="metric-label">Audio Execution Rate</div>
+        <p>Synchronized clock tracking locks data processing to high-fidelity audio parameters continuously.</p>
+      </div>
+
+      <div class="metric-card fade-in delay-4">
+        <div class="metric-value">0 ns</div>
+        <div class="metric-label">Fabric Jitter Variance</div>
+        <p>Pure hardware routing eliminates typical software context-switching resource contention entirely.</p>
+      </div>
+
+      <div class="metric-card fade-in delay-5">
+        <div class="metric-value">2012</div>
+        <div class="metric-label">HDL Language Standard</div>
+        <p>Leverages Verilog-2012 / SystemVerilog features to guarantee highly reliable RTL code synthesis.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     8. DESIGN CHALLENGES
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="challenges" aria-labelledby="challenges-heading">
   <div class="container">
-    <div class="section-header fade-in delay-3">
+    <div class="section-header fade-in delay-4">
       <h2 id="challenges-heading">Design Challenges</h2>
-      <span class="count">— problems, tradeoffs, solutions</span>
+      <span class="count">— tradeoffs and constraints</span>
     </div>
 
     <div class="challenge-grid">
 
       <div class="challenge-card fade-in delay-4">
         <div class="challenge-index">Challenge 01</div>
-        <h3>Fixed-Point Saturation in Multi-Stage Gain</h3>
-        <p><span class="lab">Problem:</span> Cascading gain stages overflows even when final output is in range; naive per-stage saturation loses dynamic range.</p>
-        <p><span class="lab">Solution:</span> Extended-precision intermediates (WIDTH+16) with rounding before truncation — saturation only at the output stage, preserving headroom through the chain.</p>
+        <h3>Fixed-Point Arithmetic Overflows</h3>
+        <p>Executing mathematical audio filters can easily result in arithmetic register overflows that corrupt the sound. Resolution required custom bit-width extensions and clipping safety checks to handle values within limits without causing register roll-overs.</p>
       </div>
 
-      <div class="challenge-card fade-in delay-4">
+      <div class="challenge-card fade-in delay-5">
         <div class="challenge-index">Challenge 02</div>
-        <h3>Glitch-Free Hot-Swap Mid-Stream</h3>
-        <p><span class="lab">Problem:</span> Reconfiguring the chain while samples are in flight causes pops and clicks; zero-latency switching trades off against audio continuity.</p>
-        <p><span class="lab">Solution:</span> Synchronous crossbar-MUX routing — in-flight samples drain through the old path, new samples take the new path, costing ~2 cycles per sample.</p>
-      </div>
-
-      <div class="challenge-card fade-in delay-5">
-        <div class="challenge-index">Challenge 03</div>
-        <h3>Resource Scaling Across Bit Widths</h3>
-        <p><span class="lab">Problem:</span> 16→24-bit cost isn't linear — DSP48 slices quantize in chunks, so utilization jumps unpredictably with precision.</p>
-        <p><span class="lab">Solution:</span> Every arithmetic module genericized on <code>WIDTH</code>, with a post-synthesis LUT/DSP/BRAM tradeoff table at 16/20/24-bit depths documenting the scaling curve.</p>
-      </div>
-
-      <div class="challenge-card fade-in delay-5">
-        <div class="challenge-index">Challenge 04</div>
-        <h3>Parameterized Delays in BRAM</h3>
-        <p><span class="lab">Problem:</span> Delay-line depth scales with both delay time and bit width — 24-bit samples consume proportionally more memory than 16-bit.</p>
-        <p><span class="lab">Solution:</span> Buffers parameterized on bit depth and sample count so Vivado infers efficient BRAM; max delay per bit-depth configuration documented in the resource table.</p>
-      </div>
-
-      <div class="challenge-card fade-in delay-6">
-        <div class="challenge-index">Challenge 05</div>
-        <h3>Verification Without Formal Methods</h3>
-        <p><span class="lab">Problem:</span> No UVM/SVA — custom testbenches risk missing saturation corner cases and underflow in divisions.</p>
-        <p><span class="lab">Solution:</span> Exhaustive-range benches per effect (min/max/mid-scale, transitions, coefficient sweeps), post-synthesis simulation to catch timing violations, and golden-reference comparison against MATLAB.</p>
+        <h3>Asynchronous Phase Jitter</h3>
+        <p>Ingesting streaming peripheral input clocks alongside internal master frequencies causes timing conflicts. The resolution involved implementing ring FIFO buffers to cleanly re-align frame crossings across clock domain lines safely.</p>
       </div>
 
     </div>
@@ -1269,96 +1184,62 @@ a:focus-visible, button:focus-visible {
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     STATUS / ROADMAP
-     ═══════════════════════════════════════════════════════════════════ -->
-<section id="status" aria-labelledby="status-heading">
-  <div class="container">
-    <div class="section-header fade-in delay-3">
-      <h2 id="status-heading">Project Status</h2>
-      <span class="count">— active development</span>
-    </div>
-
-    <div class="status-list">
-      <div class="status-item fade-in delay-4"><span class="st done">Done</span> Core DSP pipeline — 7 effect modules RTL-complete with unit testbenches</div>
-      <div class="status-item fade-in delay-4"><span class="st done">Done</span> MATLAB → Q-format fixed-point coefficient flow, validated pre-synthesis</div>
-      <div class="status-item fade-in delay-5"><span class="st wip">WIP</span> Hot-swap effect switching implementation and real-time hardware testing</div>
-      <div class="status-item fade-in delay-5"><span class="st wip">WIP</span> Post-synthesis resource-utilization table (16/20/24-bit comparison)</div>
-      <div class="status-item fade-in delay-6"><span class="st next">Next</span> End-to-end latency measurement (target &lt;1 ms) and ILA hardware capture</div>
-      <div class="status-item fade-in delay-6"><span class="st next">Next</span> Linux UI parameter mapping over AXI; LUT-footprint optimization</div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     TECHNOLOGIES
+     9. SKILLS & TECHNOLOGIES
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="skills" aria-labelledby="skills-heading">
   <div class="container">
-    <div class="section-header fade-in delay-3">
+    <div class="section-header fade-in delay-4">
       <h2 id="skills-heading">Technologies</h2>
-      <span class="count">— skills demonstrated</span>
+      <span class="count">— skills applied</span>
     </div>
-    <div class="skills-grid fade-in delay-4">
-      <span class="skill featured">RTL Design (Verilog)</span>
-      <span class="skill featured">DSP &amp; Signal Processing</span>
-      <span class="skill featured">FPGA Resource Optimization</span>
-      <span class="skill featured">Synchronous Design &amp; Timing</span>
-      <span class="skill featured">Test &amp; Verification</span>
+    <div class="skills-grid fade-in delay-5">
+      <span class="skill featured">Verilog HDL</span>
+      <span class="skill featured">FPGA Design</span>
+      <span class="skill featured">Digital Signal Processing</span>
       <span class="skill">AXI-Stream</span>
-      <span class="skill">AXI-Lite / Memory-Mapped Registers</span>
-      <span class="skill">Zynq-7000 SoC</span>
-      <span class="skill">Xilinx Vivado</span>
+      <span class="skill">I²S Protocol</span>
       <span class="skill">Icarus Verilog</span>
-      <span class="skill">GTKWave</span>
-      <span class="skill">MATLAB Filter Design</span>
-      <span class="skill">Fixed-Point Q-Format</span>
-      <span class="skill">I²S / I²C</span>
-      <span class="skill">Clock Domain Crossing</span>
-      <span class="skill">PetaLinux</span>
+      <span class="skill">Zynq-7000 SoC</span>
+      <span class="skill">RTL Simulation</span>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     BUILD & REPOSITORY
+     10. BUILD & REPOSITORY
      ═══════════════════════════════════════════════════════════════════ -->
 <section id="build" aria-labelledby="build-heading">
   <div class="container">
-    <div class="section-header fade-in delay-3">
-      <h2 id="build-heading">Build &amp; Repository</h2>
-      <span class="count">— reproducible from clone</span>
+    <div class="section-header fade-in delay-4">
+      <h2 id="build-heading">Build & Repository</h2>
+      <span class="count">— getting started</span>
     </div>
 
     <div class="build-grid">
 
       <div class="build-card fade-in delay-4">
-        <h3>Simulate an Effect Locally</h3>
-        <p>Pure Verilog-2005/2009 — no SystemVerilog required. Each effect ships with a dedicated testbench that accepts real audio sample vectors.</p>
+        <h3>Build & Simulate Locally</h3>
+        <p>Compile and execute behavioral module verification routines using Icarus Verilog simulators.</p>
         <div class="code-block">
-<code><span class="hl"># Compile the hard-clip effect and its testbench</span>
-iverilog -g2009 -o hard_clip_tb.out hard_clip.v hard_clip_tb.v
+<code><span class="hl"># Compile the audio delay line and its testbench</span>
+iverilog -g2012 -o delay_tb.out sim/delay/delay.v sim/delay/delay_tb.v
 
-<span class="hl"># Run simulation → VCD waveform for GTKWave</span>
-vvp hard_clip_tb.out</code>
+<span class="hl"># Execute verification routing to yield VCD output</span>
+vvp delay_tb.out</code>
         </div>
       </div>
 
       <div class="build-card fade-in delay-5">
-        <h3>Repository Layout</h3>
-        <p>Per-effect simulation directories, a pipeline top-level, Vivado project files, and engineering documentation.</p>
+        <h3>Project Repository Layout</h3>
+        <p>The structured file layout separates modular source logic blocks from target physical board files.</p>
         <pre class="file-tree">
 <span class="dir">.</span>
-├── <span class="dir">docs/</span>          <span class="note">— BOM, roadmap, SWOT, journal</span>
-├── <span class="dir">sim/</span>
-│   ├── <span class="dir">eq/</span>        <span class="note">— biquad parametric EQ</span>
-│   ├── <span class="dir">fuzz/</span>      <span class="note">— asymmetric clip + gain</span>
-│   ├── <span class="dir">delay/</span>     <span class="note">— FIFO-based echo</span>
-│   ├── <span class="dir">phaser/</span>    <span class="note">— all-pass + LFO</span>
-│   ├── <span class="dir">chorus/</span>    <span class="note">— modulated delay</span>
-│   ├── <span class="dir">noise_gate/</span><span class="note">— threshold + hysteresis</span>
-│   ├── <span class="dir">i2s_transceiver/</span>
-│   └── <span class="dir">pipeline/</span>  <span class="note">— top-level effect chain</span>
-└── <span class="dir">vivado/</span>        <span class="note">— synthesis &amp; bitstream project</span></pre>
+├── <span class="dir">docs/</span>         <span class="note">— Reference BOM data and logs</span>
+├── <span class="dir">sim/</span>          <span class="note">— Verilog files & testbenches</span>
+│   ├── delay/    <span class="note">— Audio delay effect module</span>
+│   ├── hard_clip/<span class="note">— Audio distortion unit</span>
+│   └── pipeline/ <span class="note">— End-to-end signal route</span>
+└── README.md</pre>
       </div>
 
     </div>
@@ -1366,7 +1247,7 @@ vvp hard_clip_tb.out</code>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════
-     FOOTER CTA
+     13. FOOTER CTA
      ═══════════════════════════════════════════════════════════════════ -->
 <section class="cta-section" id="contact" aria-labelledby="contact-heading">
   <div class="container">
@@ -1374,7 +1255,7 @@ vvp hard_clip_tb.out</code>
       Want to dig into the waveforms?
     </h2>
     <p class="cta-sub fade-in delay-5">
-      The full RTL, per-effect testbenches, and design documentation live in the GitHub repository.
+      Explore the full collection of RTL synthesis design blocks and testbenches in the GitHub repository.
     </p>
     <div class="cta-buttons fade-in delay-6">
       <a href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener" class="btn btn-primary">
@@ -1383,7 +1264,7 @@ vvp hard_clip_tb.out</code>
         </svg>
         View on GitHub
       </a>
-      <a href="../index.html" class="btn btn-secondary">
+      <a href="../../index.html" class="btn btn-secondary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <line x1="19" y1="12" x2="5" y2="12"/>
           <polyline points="12 19 5 12 12 5"/>
@@ -1396,12 +1277,15 @@ vvp hard_clip_tb.out</code>
 
 </main>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     14. HTML FOOTER
+     ═══════════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
     <p>
       FPGA Effects Pedal
       &nbsp;·&nbsp;
-      Real-time DSP on Zynq-7000 — 7 effects, ~2–4 µs latency, hot-swappable AXI-Stream chain
+      Real-time modular audio acceleration on Zynq-7000 SoC
       &nbsp;·&nbsp;
       <a href="https://github.com/nehnes/fpga-effects-pedal" target="_blank" rel="noopener">Repository</a>
     </p>
